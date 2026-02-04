@@ -10,12 +10,14 @@ const config: Config = {
     extend: {
       colors: {
         dark: {
-          bg: '#0a0a0a',
-          card: '#141414',
-          'card-hover': '#1a1a1a',
-          overlay: 'rgba(0, 0, 0, 0.8)',
-          modal: '#1c1c1e',
-          light: '#1e1e1e',
+          bg: '#0B1120',
+          'bg-deep': '#0a0f1a',
+          card: '#141B2D',
+          'card-border': '#1E2A3F',
+          'card-hover': '#1a2338',
+          overlay: 'rgba(11, 17, 32, 0.8)',
+          modal: '#141B2D',
+          light: '#1E2A3F',
         },
         accent: {
           DEFAULT: '#4ade80',
@@ -28,8 +30,8 @@ const config: Config = {
           500: '#71717a',
           600: '#52525b',
           700: '#3f3f46',
-          800: '#27272a',
-          900: '#18181b',
+          800: '#1E2A3F',
+          900: '#0f1729',
         },
         danger: '#ef4444',
         warning: '#fbbf24',
