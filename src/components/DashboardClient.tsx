@@ -132,6 +132,8 @@ export default function DashboardClient({
   const [showCheckInFlow, setShowCheckInFlow] = useState(false);
   const [checkInSubmitting, setCheckInSubmitting] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showSkullToast, setShowSkullToast] = useState(false);
+  const [skullFading, setSkullFading] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -171,7 +173,14 @@ export default function DashboardClient({
       setStreak(newStreak);
       setLastCheckIn(new Date().toISOString());
       setShowConfetti(true);
-      setShowCheckInFlow(true);
+      setShowSkullToast(true);
+      setSkullFading(false);
+      setTimeout(() => setSkullFading(true), 2000);
+      setTimeout(() => {
+        setShowSkullToast(false);
+        setSkullFading(false);
+        setShowCheckInFlow(true);
+      }, 2500);
 
       if (navigator.vibrate) navigator.vibrate(100);
 
@@ -269,37 +278,49 @@ export default function DashboardClient({
         </Link>
       </header>
 
-      {/* ===== 💀 BRAND TAGLINE ===== */}
-      <div className="animate-fade-in-up" style={{ marginBottom: 20, opacity: 0 }}>
-        <div className="flex items-center gap-3">
-          <span style={{ fontSize: 36, lineHeight: 1 }}>☠️</span>
-          <div>
+      {/* ===== 💀 SKULL TOAST OVERLAY ===== */}
+      {showSkullToast && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(4px)",
+            animation: skullFading
+              ? "skullToastFadeOut 0.5s ease forwards"
+              : "skullToastFadeIn 0.3s ease forwards",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
+              animation: skullFading
+                ? "skullToastScaleOut 0.5s ease forwards"
+                : "skullToastScaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
+            }}
+          >
+            <span style={{ fontSize: 80, lineHeight: 1 }}>💀</span>
             <p
               style={{
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: 800,
+                color: "var(--accent, #22c55e)",
                 letterSpacing: "-0.02em",
-                color: "var(--text-primary)",
-                lineHeight: 1.2,
+                textAlign: "center",
               }}
             >
-              I&apos;m Still Here
-            </p>
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--accent)",
-                marginTop: 2,
-              }}
-            >
-              Proof of life · Daily
+              I am still alive
             </p>
           </div>
         </div>
-      </div>
+      )}
 
       {/* ===== GREETING ===== */}
       <div className="animate-fade-in-up stagger-1" style={{ marginBottom: 16 }}>
