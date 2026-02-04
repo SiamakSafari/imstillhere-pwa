@@ -16,7 +16,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
   const [checkinTime, setCheckinTime] = useState(profile?.checkin_time?.slice(0, 5) ?? "09:00");
   const [gracePeriod, setGracePeriod] = useState(profile?.grace_period_minutes ?? 120);
   const [timezone, setTimezone] = useState(
-    profile?.timezone ?? (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "America/New_York")
+    profile?.timezone ?? (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "America/Los_Angeles")
   );
   const [contacts, setContacts] = useState(initialContacts);
   const [newName, setNewName] = useState("");

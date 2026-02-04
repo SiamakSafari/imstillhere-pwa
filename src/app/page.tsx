@@ -7,13 +7,8 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-4xl mx-auto w-full">
         <div className="flex items-center gap-3">
-          <Image
-            src="/logo.png"
-            alt="I'm Still Here"
-            width={40}
-            height={40}
-            className="rounded-xl"
-          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.png" alt="ImStillHere" width={36} height={36} style={{ borderRadius: '10px' }} />
           <span className="font-semibold text-lg tracking-tight">I&apos;m Still Here</span>
         </div>
         <Link
@@ -62,7 +57,7 @@ export default function LandingPage() {
               boxShadow: '0 4px 30px rgba(34, 197, 94, 0.35)',
             }}
           >
-            Get started →
+            Prove it →
           </Link>
 
           <p className="text-sm mt-8 font-medium" style={{ color: 'var(--gray-500)' }}>
@@ -179,7 +174,7 @@ export default function LandingPage() {
               boxShadow: '0 4px 30px rgba(34, 197, 94, 0.35)',
             }}
           >
-            Get started →
+            Prove it →
           </Link>
         </div>
       </section>

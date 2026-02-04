@@ -32,6 +32,25 @@ function getInitial(name: string): string {
   return name.trim().charAt(0).toUpperCase();
 }
 
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${Math.floor(diffHours / 24)}d ago`;
+}
+
+function getNextMilestone(streak: number): { target: number; remaining: number } {
+  const milestones = [7, 30, 100, 365];
+  for (const m of milestones) {
+    if (streak < m) return { target: m, remaining: m - streak };
+  }
+  return { target: 365, remaining: 0 };
+}
+
 function getWeekRange(): string {
   const now = new Date();
   const day = now.getDay();
@@ -47,7 +66,6 @@ function getWeekRange(): string {
 export default function DashboardClient({
   profile,
   hasCheckedInToday: initialCheckedIn,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   lastCheckinAt,
   streak: initialStreak,
   contactCount,
@@ -56,6 +74,8 @@ export default function DashboardClient({
   const [streak, setStreak] = useState(initialStreak);
   const [loading, setLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [warningDismissed, setWarningDismissed] = useState(false);
+  const [checkinTime, setCheckinTime] = useState<Date | null>(initialCheckedIn ? (lastCheckinAt ? new Date(lastCheckinAt) : new Date()) : null);
   const router = useRouter();
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -80,6 +100,7 @@ export default function DashboardClient({
       const newStreak = initialStreak + 1;
       setCheckedIn(true);
       setStreak(newStreak);
+      setCheckinTime(new Date());
       setShowConfetti(true);
 
       if (navigator.vibrate) navigator.vibrate(100);
@@ -164,22 +185,28 @@ export default function DashboardClient({
       </header>
 
       {/* No contacts warning */}
-      {contactCount === 0 && (
-        <Link
-          href="/settings"
-          className="block rounded-xl p-4 mb-6 text-sm animate-fade-in-up"
+      {contactCount === 0 && !warningDismissed && (
+        <div
+          className="relative rounded-xl p-3 mb-6 text-xs animate-fade-in-up"
           style={{
-            backgroundColor: "rgba(251, 191, 36, 0.06)",
-            border: "1px solid rgba(251, 191, 36, 0.25)",
+            border: "1px solid var(--card-border)",
           }}
         >
-          <p className="font-semibold" style={{ color: "var(--warning)" }}>
-            ⚠️ No emergency contacts
-          </p>
-          <p className="mt-1" style={{ color: "var(--text-secondary)" }}>
-            Nobody will know if you miss a check-in.
-          </p>
-        </Link>
+          <button
+            onClick={() => setWarningDismissed(true)}
+            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full"
+            style={{ color: "var(--text-secondary)" }}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+          <Link href="/settings">
+            <p className="font-medium" style={{ color: "var(--text-secondary)" }}>
+              ⚠️ No emergency contacts set up yet.{" "}
+              <span style={{ color: "var(--accent)" }}>Add one →</span>
+            </p>
+          </Link>
+        </div>
       )}
 
       {/* ===== GREETING ===== */}
@@ -193,12 +220,12 @@ export default function DashboardClient({
       </div>
 
       {/* ===== CHECK-IN BUTTON with radial glow ===== */}
-      <div className="flex justify-center mb-14 animate-fade-in-up stagger-2" style={{ opacity: 0 }}>
+      <div className="flex flex-col items-center mb-6 animate-fade-in-up stagger-2" style={{ opacity: 0 }}>
         <div className="relative" style={{ width: 300, height: 300 }}>
-          {/* Outer radial glow — light emanating from button */}
+          {/* Outer radial glow — pulsing green breathing */}
           {!checkedIn && (
             <div
-              className="absolute checkin-radial-glow"
+              className="absolute animate-pulse-glow"
               style={{
                 width: 380,
                 height: 380,
@@ -207,7 +234,7 @@ export default function DashboardClient({
                 transform: "translate(-50%, -50%)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(circle, rgba(74, 222, 128, 0.2) 0%, rgba(74, 222, 128, 0.1) 30%, rgba(74, 222, 128, 0.03) 55%, transparent 75%)",
+                  "radial-gradient(circle, rgba(74, 222, 128, 0.3) 0%, rgba(74, 222, 128, 0.15) 30%, rgba(74, 222, 128, 0.05) 55%, transparent 75%)",
                 pointerEvents: "none",
               }}
             />
@@ -226,11 +253,11 @@ export default function DashboardClient({
               transform: "translate(-50%, -50%)",
               background: checkedIn
                 ? "linear-gradient(145deg, #1a2338 0%, #141B2D 100%)"
-                : "linear-gradient(145deg, #5eead4 0%, #4ade80 25%, #22c55e 60%, #16a34a 100%)",
+                : "linear-gradient(145deg, #86efac 0%, #4ade80 30%, #22c55e 70%, #16a34a 100%)",
               border: checkedIn ? "1.5px solid var(--card-border)" : "none",
               boxShadow: checkedIn
                 ? "inset 0 1px 3px rgba(0,0,0,0.3)"
-                : "0 8px 40px rgba(34, 197, 94, 0.35), 0 2px 8px rgba(0,0,0,0.2)",
+                : "0 0 60px rgba(74, 222, 128, 0.4), 0 0 120px rgba(74, 222, 128, 0.15), 0 8px 40px rgba(34, 197, 94, 0.35)",
               cursor: checkedIn ? "default" : "pointer",
             }}
             aria-label={checkedIn ? "Already checked in" : "Check in"}
@@ -277,11 +304,32 @@ export default function DashboardClient({
             )}
           </button>
         </div>
+
+        {/* Protected badge + last check-in (after check-in only) */}
+        {checkedIn && (
+          <div className="flex flex-col items-center gap-2 mt-2">
+            <span
+              style={{
+                background: "#22c55e",
+                color: "white",
+                padding: "6px 16px",
+                borderRadius: "999px",
+                fontWeight: 600,
+                fontSize: "14px",
+              }}
+            >
+              🛡️ Protected
+            </span>
+            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+              Last check-in: {checkinTime ? getTimeAgo(checkinTime) : "Just now"}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ===== STREAK CARD ===== */}
       <div
-        className="rounded-2xl p-6 mb-5 card-hover animate-fade-in-up stagger-3"
+        className="rounded-2xl p-6 mb-6 card-hover animate-fade-in-up stagger-3"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--card-border)",
@@ -311,10 +359,34 @@ export default function DashboardClient({
             days
           </span>
         </div>
+        {/* Progress bar to next milestone */}
+        {(() => {
+          const { target, remaining } = getNextMilestone(streak);
+          const progress = target > 0 ? Math.min((streak / target) * 100, 100) : 100;
+          return (
+            <div className="mt-4">
+              <div
+                className="w-full h-2 rounded-full overflow-hidden"
+                style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${progress}%`,
+                    background: "linear-gradient(90deg, #22c55e, #4ade80)",
+                  }}
+                />
+              </div>
+              <p className="text-xs mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
+                {remaining > 0 ? `${remaining} to ${target}-day milestone` : `🎉 ${target}-day milestone reached!`}
+              </p>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ===== DAILY QUOTE ===== */}
-      <div className="text-center mb-8 px-6 animate-fade-in-up stagger-4" style={{ opacity: 0 }}>
+      <div className="text-center mb-6 px-6 py-6 animate-fade-in-up stagger-4" style={{ opacity: 0 }}>
         <span
           className="text-3xl block mb-3"
           style={{ color: "var(--accent)", opacity: 0.35 }}
@@ -339,7 +411,7 @@ export default function DashboardClient({
 
       {/* ===== THIS WEEK CARD ===== */}
       <div
-        className="rounded-2xl p-6 mb-10 card-hover animate-fade-in-up stagger-5"
+        className="rounded-2xl p-6 mb-6 card-hover animate-fade-in-up stagger-5"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--card-border)",
