@@ -10,72 +10,132 @@ import { getQuoteForDate } from "@/lib/quotes";
 import PWAInstallPrompt from "./PWAInstallPrompt";
 import Confetti from "./Confetti";
 
+/* ─── Types (from Expo types.ts) ─── */
+type MoodValue = "great" | "good" | "okay" | "low" | "rough";
+
+const MILESTONES = [7, 14, 30, 60, 100, 365];
+
+const MILESTONE_BADGES: Record<
+  number,
+  { label: string; fullLabel: string; color: string }
+> = {
+  7: { label: "1W", fullLabel: "Week One", color: "#22c55e" },
+  14: { label: "2W", fullLabel: "Two Weeks", color: "#16a34a" },
+  30: { label: "1M", fullLabel: "One Month", color: "#c0c0c0" },
+  60: { label: "2M", fullLabel: "Two Months", color: "#fbbf24" },
+  100: { label: "100", fullLabel: "Century", color: "#60a5fa" },
+  365: { label: "1Y", fullLabel: "One Year", color: "#f59e0b" },
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const MOOD_VALUES: Record<MoodValue, number> = {
+  great: 5,
+  good: 4,
+  okay: 3,
+  low: 2,
+  rough: 1,
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const VALUE_TO_LABEL: Record<number, string> = {
+  5: "Great",
+  4: "Good",
+  3: "Okay",
+  2: "Low",
+  1: "Rough",
+};
+
+/* ─── Theme constants (from Expo theme.ts) ─── */
+const Colors = {
+  bgDark: "#0a0a0a",
+  bgCard: "#141414",
+  bgCardHover: "#1a1a1a",
+  accentPrimary: "#4ade80",
+  accentDark: "#22c55e",
+  accentDarker: "#16a34a",
+  accentGlow: "rgba(74, 222, 128, 0.4)",
+  gray200: "#e4e4e7",
+  gray400: "#a1a1aa",
+  gray500: "#71717a",
+  gray700: "#3f3f46",
+  gray800: "#27272a",
+  white: "#ffffff",
+};
+
+/* ─── Helpers (from Expo utils/time.ts) ─── */
 interface Props {
   profile: Profile | null;
   hasCheckedInToday: boolean;
   lastCheckinAt: string | null;
   streak: number;
   contactCount: number;
+  contactName?: string;
+  contactEmail?: string;
+  petName?: string;
 }
 
 function getGreeting(): string {
   const h = new Date().getHours();
-  if (h < 5) return "Good night";
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
-  if (h < 21) return "Good evening";
-  return "Good night";
+  return "Good evening";
 }
 
-function getInitial(name: string): string {
+function getInitials(name: string): string {
   if (!name) return "?";
-  return name.trim().charAt(0).toUpperCase();
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (
+    parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+  ).toUpperCase();
 }
 
-function getTimeAgo(date: Date): string {
+function getNextMilestone(streak: number): number {
+  return MILESTONES.find((m) => m > streak) || streak + 100;
+}
+
+function formatLastCheckIn(lastCheckIn: string | null): string | null {
+  if (!lastCheckIn) return null;
+  const date = new Date(lastCheckIn);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHours = Math.floor(diffMin / 60);
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
-  return `${Math.floor(diffHours / 24)}d ago`;
-}
-
-function getNextMilestone(streak: number): { target: number; remaining: number } {
-  const milestones = [7, 30, 100, 365];
-  for (const m of milestones) {
-    if (streak < m) return { target: m, remaining: m - streak };
+  if (date.toDateString() === now.toDateString()) {
+    return `Today at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
   }
-  return { target: 365, remaining: 0 };
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) {
+    return `Yesterday at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  }
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-function getWeekRange(): string {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((day + 6) % 7));
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  return `${fmt(monday)} – ${fmt(sunday)}`;
-}
-
+/* ─── Component ─── */
 export default function DashboardClient({
   profile,
   hasCheckedInToday: initialCheckedIn,
   lastCheckinAt,
   streak: initialStreak,
   contactCount,
+  contactName,
+  contactEmail,
+  petName,
 }: Props) {
   const [checkedIn, setCheckedIn] = useState(initialCheckedIn);
-  const [streak, setStreak] = useState(initialStreak);
+  const [streak, setStreak] = useState(
+    typeof initialStreak === "number" && !isNaN(initialStreak)
+      ? initialStreak
+      : 0
+  );
   const [loading, setLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [warningDismissed, setWarningDismissed] = useState(false);
-  const [checkinTime, setCheckinTime] = useState<Date | null>(initialCheckedIn ? (lastCheckinAt ? new Date(lastCheckinAt) : new Date()) : null);
+  const [expanded, setExpanded] = useState(false);
+  const [lastCheckIn, setLastCheckIn] = useState<string | null>(lastCheckinAt);
   const router = useRouter();
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -84,7 +144,20 @@ export default function DashboardClient({
 
   const name = profile?.display_name || "friend";
   const quote = useMemo(() => getQuoteForDate(new Date()), []);
-  const weekDays = Math.min(streak, 7);
+
+  const nextMilestone = getNextMilestone(streak);
+  const prevMilestone = MILESTONES.filter((m) => m <= streak).pop() || 0;
+  const progressInSegment = streak - prevMilestone;
+  const segmentSize = nextMilestone - prevMilestone;
+  const progress =
+    segmentSize > 0 ? (progressInSegment / segmentSize) * 100 : 0;
+  const earnedMilestones = MILESTONES.filter((m) => streak >= m);
+  const lastCheckInFormatted = formatLastCheckIn(lastCheckIn);
+
+  // Weekly summary (simplified — no mood data from server yet)
+  const weeklySummary = useMemo(() => {
+    return { daysCheckedIn: Math.min(streak, 7), avgMoodLabel: "—" };
+  }, [streak]);
 
   async function handleCheckIn() {
     if (checkedIn || loading) return;
@@ -100,7 +173,7 @@ export default function DashboardClient({
       const newStreak = initialStreak + 1;
       setCheckedIn(true);
       setStreak(newStreak);
-      setCheckinTime(new Date());
+      setLastCheckIn(new Date().toISOString());
       setShowConfetti(true);
 
       if (navigator.vibrate) navigator.vibrate(100);
@@ -117,147 +190,119 @@ export default function DashboardClient({
   return (
     <main
       className="min-h-dvh flex flex-col px-5 pt-5 pb-8 max-w-lg mx-auto"
-      style={{ backgroundColor: "var(--bg)" }}
+      style={{ backgroundColor: Colors.bgDark }}
     >
       <Confetti trigger={showConfetti} streak={streak} />
 
-      {/* ===== TOP BAR ===== */}
-      <header className="flex items-center justify-between mb-10 animate-fade-in-up">
-        {/* Avatar circle */}
+      {/* ===== TOP BAR: Avatar + Greeting + Settings ===== */}
+      <header className="flex items-center justify-between mb-4 animate-fade-in-up">
+        {/* Avatar — 44px, #16a34a bg, 2px solid #4ade80 border */}
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-lg"
+          className="flex items-center justify-center font-bold"
           style={{
-            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
-            color: "#fff",
-            boxShadow: "0 2px 12px rgba(34, 197, 94, 0.3)",
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: Colors.accentDarker,
+            border: `2px solid ${Colors.accentPrimary}`,
+            color: Colors.white,
+            fontSize: 16,
           }}
         >
-          {getInitial(name)}
+          {getInitials(name)}
         </div>
 
-        {/* Right icons */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/settings"
-            aria-label="Calendar"
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
-            style={{ backgroundColor: "var(--card)" }}
+        {/* Settings icon */}
+        <Link
+          href="/settings"
+          aria-label="Settings"
+          className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+          style={{ backgroundColor: Colors.bgCard }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ color: Colors.gray400 }}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-          </Link>
-          <Link
-            href="/settings"
-            aria-label="Settings"
-            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
-            style={{ backgroundColor: "var(--card)" }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-          </Link>
-        </div>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </Link>
       </header>
 
-      {/* No contacts warning */}
-      {contactCount === 0 && !warningDismissed && (
-        <div
-          className="relative rounded-xl p-3 mb-6 text-xs animate-fade-in-up"
+      {/* ===== GREETING (Expo: Greeting.tsx) ===== */}
+      {/* fontSize: 24 (FontSize.xl), fontWeight 700, marginBottom: 16 (Spacing.md) */}
+      <div className="animate-fade-in-up stagger-1" style={{ marginBottom: 16 }}>
+        <p
           style={{
-            border: "1px solid var(--card-border)",
+            fontSize: 24,
+            fontWeight: 700,
+            color: Colors.white,
           }}
         >
-          <button
-            onClick={() => setWarningDismissed(true)}
-            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full"
-            style={{ color: "var(--text-secondary)" }}
-            aria-label="Dismiss"
-          >
-            ✕
-          </button>
-          <Link href="/settings">
-            <p className="font-medium" style={{ color: "var(--text-secondary)" }}>
-              ⚠️ No emergency contacts set up yet.{" "}
-              <span style={{ color: "var(--accent)" }}>Add one →</span>
-            </p>
-          </Link>
-        </div>
-      )}
-
-      {/* ===== GREETING ===== */}
-      <div className="text-center mb-10 animate-fade-in-up stagger-1">
-        <p className="text-2xl font-light tracking-tight" style={{ color: "var(--text-secondary)" }}>
           {getGreeting()},{" "}
-          <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
-            {name}
-          </span>
+          <span style={{ color: Colors.accentPrimary }}>{name}</span>
         </p>
       </div>
 
-      {/* ===== CHECK-IN BUTTON with radial glow ===== */}
-      <div className="flex flex-col items-center mb-6 animate-fade-in-up stagger-2" style={{ opacity: 0 }}>
-        <div className="relative" style={{ width: 300, height: 300 }}>
-          {/* Outer radial glow — pulsing green breathing */}
+      {/* ===== CHECK-IN BUTTON (Expo: CheckInButton.tsx) ===== */}
+      {/* wrapper: 240x240, button: 180x180, glow ring: 220x220 */}
+      <div
+        className="flex flex-col items-center animate-fade-in-up stagger-2"
+        style={{ marginBottom: 24, opacity: 0 }}
+      >
+        <div
+          className="relative flex items-center justify-center"
+          style={{ width: 240, height: 240 }}
+        >
+          {/* Glow ring — 220px, pulsing when not checked in */}
           {!checkedIn && (
             <div
-              className="absolute animate-pulse-glow"
+              className="absolute animate-pulse-scale"
               style={{
-                width: 380,
-                height: 380,
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                borderRadius: "50%",
-                background:
-                  "radial-gradient(circle, rgba(74, 222, 128, 0.3) 0%, rgba(74, 222, 128, 0.15) 30%, rgba(74, 222, 128, 0.05) 55%, transparent 75%)",
-                pointerEvents: "none",
+                width: 220,
+                height: 220,
+                borderRadius: 110,
+                backgroundColor: Colors.accentGlow,
+                opacity: 0.3,
               }}
             />
           )}
 
-          {/* The big circle button */}
+          {/* Progress circle ring (streak > 0) — 200px, 4px border */}
+          {streak > 0 && (
+            <div
+              className="absolute"
+              style={{
+                width: 200,
+                height: 200,
+                borderRadius: 100,
+                border: `4px solid ${Colors.gray800}`,
+              }}
+            />
+          )}
+
+          {/* The main button — 180x180 */}
           <button
             onClick={handleCheckIn}
             disabled={checkedIn || loading}
-            className="absolute rounded-full flex flex-col items-center justify-center transition-all duration-300 btn-press"
+            className="relative rounded-full flex flex-col items-center justify-center transition-all duration-300 btn-press"
             style={{
-              width: 270,
-              height: 270,
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              background: checkedIn
-                ? "linear-gradient(145deg, #1a2338 0%, #141B2D 100%)"
-                : "linear-gradient(145deg, #86efac 0%, #4ade80 30%, #22c55e 70%, #16a34a 100%)",
-              border: checkedIn ? "1.5px solid var(--card-border)" : "none",
+              width: 180,
+              height: 180,
+              backgroundColor: checkedIn ? Colors.gray800 : Colors.accentPrimary,
+              border: checkedIn
+                ? `2px solid ${Colors.accentDark}`
+                : "none",
               boxShadow: checkedIn
-                ? "inset 0 1px 3px rgba(0,0,0,0.3)"
-                : "0 0 60px rgba(74, 222, 128, 0.4), 0 0 120px rgba(74, 222, 128, 0.15), 0 8px 40px rgba(34, 197, 94, 0.35)",
+                ? "none"
+                : `0 0 20px ${Colors.accentPrimary}66`,
               cursor: checkedIn ? "default" : "pointer",
             }}
             aria-label={checkedIn ? "Already checked in" : "Check in"}
@@ -266,37 +311,68 @@ export default function DashboardClient({
               <div
                 className="w-10 h-10 border-[3px] rounded-full animate-spin"
                 style={{
-                  borderColor: "rgba(11, 17, 32, 0.3)",
-                  borderTopColor: "var(--bg)",
+                  borderColor: "rgba(10, 10, 10, 0.3)",
+                  borderTopColor: Colors.bgDark,
                 }}
               />
             ) : checkedIn ? (
-              <div className="text-center animate-fade-up">
-                <span className="text-6xl block mb-2">✅</span>
+              <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center">
+                  {/* Checkmark: fontSize 52, fontWeight 800, marginBottom -4 */}
+                  <span
+                    style={{
+                      fontSize: 52,
+                      color: Colors.accentPrimary,
+                      fontWeight: 800,
+                      marginBottom: -4,
+                      lineHeight: 1,
+                    }}
+                  >
+                    ✓
+                  </span>
+                  {/* Checkmark bar: 32x8, borderRadius 4 */}
+                  <div
+                    style={{
+                      width: 32,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: Colors.accentPrimary,
+                    }}
+                  />
+                </div>
+                {/* "Done" label: fontSize 16, fontWeight 600, marginTop 4 */}
                 <span
-                  className="text-xl font-bold block"
-                  style={{ color: "var(--accent)" }}
+                  style={{
+                    fontSize: 16,
+                    color: Colors.accentPrimary,
+                    fontWeight: 600,
+                    marginTop: 4,
+                  }}
                 >
-                  Still alive
-                </span>
-                <span
-                  className="text-sm block mt-1.5 font-medium"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  See you tomorrow
+                  Done
                 </span>
               </div>
             ) : (
-              <div className="text-center">
+              <div className="flex flex-col items-center">
+                {/* "Check In": fontSize 32 (FontSize.xxl), fontWeight 800, letterSpacing -0.5 */}
                 <span
-                  className="text-[28px] font-bold leading-tight block"
-                  style={{ color: "#0B1120" }}
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 800,
+                    color: Colors.bgDark,
+                    letterSpacing: -0.5,
+                  }}
                 >
                   Check In
                 </span>
+                {/* "Tap to confirm": fontSize 14, color rgba(10,10,10,0.6), fontWeight 500, marginTop 4 */}
                 <span
-                  className="text-[15px] font-medium mt-2 block"
-                  style={{ color: "rgba(11, 17, 32, 0.55)" }}
+                  style={{
+                    fontSize: 14,
+                    color: "rgba(10, 10, 10, 0.6)",
+                    fontWeight: 500,
+                    marginTop: 4,
+                  }}
                 >
                   Tap to confirm
                 </span>
@@ -304,191 +380,437 @@ export default function DashboardClient({
             )}
           </button>
         </div>
+      </div>
 
-        {/* Protected badge + last check-in (after check-in only) */}
-        {checkedIn && (
-          <div className="flex flex-col items-center gap-2 mt-2">
+      {/* ===== STREAK CARD (Expo: Stats.tsx) ===== */}
+      {/* card: bgCard, borderRadius 16, padding 24, border 1px gray800 */}
+      <div
+        className="animate-fade-in-up stagger-3"
+        style={{ marginBottom: 24, opacity: 0 }}
+      >
+        <div
+          className="cursor-pointer card-hover"
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            backgroundColor: Colors.bgCard,
+            borderRadius: 16,
+            padding: 24,
+            border: `1px solid ${Colors.gray800}`,
+          }}
+        >
+          {/* Header row: fire icon + "Streak" + expand chevron */}
+          <div
+            className="flex items-center"
+            style={{ marginBottom: 8 }}
+          >
+            <span style={{ fontSize: 20, marginRight: 8 }}>🔥</span>
+            <span
+              className="flex-1"
+              style={{
+                fontSize: 14,
+                color: Colors.gray400,
+                fontWeight: 600,
+              }}
+            >
+              Streak
+            </span>
             <span
               style={{
-                background: "#22c55e",
-                color: "white",
-                padding: "6px 16px",
-                borderRadius: "999px",
+                fontSize: 16,
+                color: Colors.gray500,
+                transform: expanded ? "rotate(180deg)" : "none",
+                transition: "transform 0.2s ease",
+                display: "inline-block",
+              }}
+            >
+              ▾
+            </span>
+          </div>
+
+          {/* Value row: streak number + "days" */}
+          <div className="flex items-baseline" style={{ gap: 8 }}>
+            <span
+              style={{
+                fontSize: 48,
+                fontWeight: 800,
+                color: checkedIn ? Colors.accentPrimary : Colors.gray400,
+              }}
+            >
+              {streak}
+            </span>
+            <span
+              style={{
+                fontSize: 18,
+                color: Colors.gray500,
                 fontWeight: 600,
-                fontSize: "14px",
+              }}
+            >
+              days
+            </span>
+          </div>
+
+          {/* Progress bar (streak > 0) */}
+          {streak > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  height: 4,
+                  backgroundColor: Colors.gray800,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${Math.min(progress, 100)}%`,
+                    backgroundColor: Colors.accentPrimary,
+                    borderRadius: 2,
+                    transition: "width 0.5s ease",
+                  }}
+                />
+              </div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: Colors.gray500,
+                  marginTop: 4,
+                }}
+              >
+                {nextMilestone - streak} to next milestone
+              </p>
+            </div>
+          )}
+
+          {/* Earned milestone badges */}
+          {earnedMilestones.length > 0 && (
+            <div
+              className="flex flex-wrap"
+              style={{ gap: 8, marginTop: 16 }}
+            >
+              {earnedMilestones.map((m) => (
+                <div
+                  key={m}
+                  style={{
+                    borderWidth: 1.5,
+                    borderStyle: "solid",
+                    borderColor: MILESTONE_BADGES[m].color,
+                    borderRadius: 8,
+                    paddingLeft: 8,
+                    paddingRight: 8,
+                    paddingTop: 2,
+                    paddingBottom: 2,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: MILESTONE_BADGES[m].color,
+                    }}
+                  >
+                    {MILESTONE_BADGES[m].label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Expanded: weekly section */}
+          {expanded && (
+            <div style={{ marginTop: 16 }}>
+              {/* Divider */}
+              <div
+                style={{
+                  height: 1,
+                  backgroundColor: Colors.gray800,
+                  marginBottom: 16,
+                }}
+              />
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Colors.gray400,
+                  fontWeight: 600,
+                  marginBottom: 16,
+                }}
+              >
+                This Week
+              </p>
+              <div className="flex" style={{ gap: 32 }}>
+                <div className="flex flex-col items-center">
+                  <span
+                    style={{
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: Colors.white,
+                    }}
+                  >
+                    {weeklySummary.daysCheckedIn}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: Colors.gray500,
+                      fontWeight: 600,
+                      marginTop: 2,
+                    }}
+                  >
+                    Days
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span
+                    style={{
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: Colors.white,
+                    }}
+                  >
+                    {weeklySummary.avgMoodLabel}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: Colors.gray500,
+                      fontWeight: 600,
+                      marginTop: 2,
+                    }}
+                  >
+                    Mood
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Protected badge (after check-in) — Expo: protectedBadge */}
+        {checkedIn && (
+          <div className="flex justify-center" style={{ marginTop: 16 }}>
+            <span
+              style={{
+                backgroundColor: Colors.accentDark + "20",
+                borderRadius: 9999,
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 8,
+                paddingBottom: 8,
+                color: Colors.accentPrimary,
+                fontSize: 14,
+                fontWeight: 700,
               }}
             >
               🛡️ Protected
             </span>
-            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
-              Last check-in: {checkinTime ? getTimeAgo(checkinTime) : "Just now"}
+          </div>
+        )}
+
+        {/* Last check-in time */}
+        {lastCheckInFormatted && (
+          <div className="flex justify-center" style={{ marginTop: 8 }}>
+            <span style={{ color: Colors.gray500, fontSize: 12 }}>
+              🕐 Last check-in: {lastCheckInFormatted}
             </span>
           </div>
         )}
       </div>
 
-      {/* ===== STREAK CARD ===== */}
+      {/* ===== DAILY QUOTE CARD (Expo: DailyQuote.tsx) ===== */}
+      {/* In a card — bgCard, borderRadius 16, padding 24, border 1px gray800, marginBottom 24 */}
       <div
-        className="rounded-2xl p-6 mb-6 card-hover animate-fade-in-up stagger-3"
+        className="animate-fade-in-up stagger-4"
         style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--card-border)",
+          backgroundColor: Colors.bgCard,
+          borderRadius: 16,
+          padding: 24,
+          border: `1px solid ${Colors.gray800}`,
+          marginBottom: 24,
           opacity: 0,
         }}
       >
-        <div className="flex items-center gap-2.5 mb-3">
-          <span className="text-xl">🔥</span>
-          <span
-            className="text-[11px] font-bold uppercase tracking-[0.15em]"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Streak
-          </span>
-        </div>
-        <div className="flex items-baseline gap-3">
-          <span
-            className="text-6xl font-extrabold tracking-tight"
-            style={{ color: "var(--text-primary)" }}
-          >
-            {streak}
-          </span>
-          <span
-            className="text-lg font-medium"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            days
-          </span>
-        </div>
-        {/* Progress bar to next milestone */}
-        {(() => {
-          const { target, remaining } = getNextMilestone(streak);
-          const progress = target > 0 ? Math.min((streak / target) * 100, 100) : 100;
-          return (
-            <div className="mt-4">
-              <div
-                className="w-full h-2 rounded-full overflow-hidden"
-                style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${progress}%`,
-                    background: "linear-gradient(90deg, #22c55e, #4ade80)",
-                  }}
-                />
-              </div>
-              <p className="text-xs mt-2 font-medium" style={{ color: "var(--text-secondary)" }}>
-                {remaining > 0 ? `${remaining} to ${target}-day milestone` : `🎉 ${target}-day milestone reached!`}
-              </p>
-            </div>
-          );
-        })()}
-      </div>
-
-      {/* ===== DAILY QUOTE ===== */}
-      <div className="text-center mb-6 px-6 py-6 animate-fade-in-up stagger-4" style={{ opacity: 0 }}>
+        {/* Quote icon: fontSize 24, accentPrimary, opacity 0.5, marginBottom 8 */}
         <span
-          className="text-3xl block mb-3"
-          style={{ color: "var(--accent)", opacity: 0.35 }}
+          style={{
+            fontSize: 24,
+            color: Colors.accentPrimary,
+            opacity: 0.5,
+            display: "block",
+            marginBottom: 8,
+          }}
         >
           ❝
         </span>
+        {/* Quote text: fontSize 16, gray200, italic, lineHeight 24 */}
         <p
-          className="text-[17px] italic leading-relaxed font-light"
-          style={{ color: "var(--accent)", opacity: 0.9 }}
+          style={{
+            fontSize: 16,
+            color: Colors.gray200,
+            fontStyle: "italic",
+            lineHeight: "24px",
+          }}
         >
           {quote.text}
         </p>
+        {/* Author: fontSize 14, gray500, marginTop 8 */}
         {quote.author && (
           <p
-            className="text-sm mt-3 font-medium"
-            style={{ color: "var(--text-secondary)", opacity: 0.7 }}
+            style={{
+              fontSize: 14,
+              color: Colors.gray500,
+              marginTop: 8,
+            }}
           >
             — {quote.author}
           </p>
         )}
       </div>
 
-      {/* ===== THIS WEEK CARD ===== */}
+      {/* ===== EMERGENCY CONTACT CARD (Expo: ContactInfo.tsx) ===== */}
+      {/* card: bgCard, borderRadius 16, padding 24, border 1px gray800 */}
       <div
-        className="rounded-2xl p-6 mb-6 card-hover animate-fade-in-up stagger-5"
-        style={{
-          backgroundColor: "var(--card)",
-          border: "1px solid var(--card-border)",
-          opacity: 0,
-        }}
+        className="animate-fade-in-up stagger-5"
+        style={{ marginBottom: 24, opacity: 0 }}
       >
-        <div className="flex items-center gap-2.5 mb-5">
-          <span className="text-xl">📅</span>
-          <span
-            className="text-[11px] font-bold uppercase tracking-[0.15em]"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            This Week
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 text-center mb-4">
-          <div>
-            <p
-              className="text-4xl font-extrabold tracking-tight"
-              style={{ color: "var(--text-primary)" }}
-            >
-              {weekDays}
-            </p>
-            <p
-              className="text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Days
-            </p>
-          </div>
+        {(contactName || contactEmail || contactCount > 0) && (
           <div
-            style={{ borderLeft: "1px solid var(--card-border)", borderRight: "1px solid var(--card-border)" }}
+            style={{
+              backgroundColor: Colors.bgCard,
+              borderRadius: 16,
+              padding: 24,
+              border: `1px solid ${Colors.gray800}`,
+              marginBottom: 16,
+            }}
           >
-            <p
-              className="text-4xl font-extrabold tracking-tight"
-              style={{ color: "var(--text-secondary)" }}
+            {/* Header: icon + "EMERGENCY CONTACT" */}
+            <div
+              className="flex items-center"
+              style={{ gap: 8, marginBottom: 8 }}
             >
-              —
-            </p>
-            <p
-              className="text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Mood
-            </p>
+              <span style={{ fontSize: 16 }}>👤</span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: Colors.gray500,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                Emergency Contact
+              </span>
+            </div>
+            {/* Content */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {contactName && (
+                <span
+                  style={{
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: 600,
+                  }}
+                >
+                  {contactName}
+                </span>
+              )}
+              {contactEmail && (
+                <span style={{ fontSize: 14, color: Colors.gray400 }}>
+                  {contactEmail}
+                </span>
+              )}
+              {!contactName && !contactEmail && contactCount > 0 && (
+                <span
+                  style={{
+                    fontSize: 14,
+                    color: Colors.gray400,
+                  }}
+                >
+                  {contactCount} contact{contactCount !== 1 ? "s" : ""} configured
+                </span>
+              )}
+            </div>
           </div>
-          <div>
-            <p
-              className="text-4xl font-extrabold tracking-tight"
-              style={{ color: "var(--text-primary)" }}
-            >
-              {streak}
-            </p>
-            <p
-              className="text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Streak
-            </p>
-          </div>
-        </div>
+        )}
 
-        <p
-          className="text-xs text-center font-medium"
-          style={{ color: "var(--gray-500)" }}
-        >
-          {getWeekRange()}
-        </p>
+        {/* Pet card (if petName provided) */}
+        {petName && (
+          <div
+            style={{
+              backgroundColor: Colors.bgCard,
+              borderRadius: 16,
+              padding: 24,
+              border: `1px solid ${Colors.gray800}`,
+              marginBottom: 16,
+            }}
+          >
+            <div
+              className="flex items-center"
+              style={{ gap: 8, marginBottom: 8 }}
+            >
+              <span style={{ fontSize: 16 }}>🐾</span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: Colors.gray500,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                Pet
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: 600,
+              }}
+            >
+              {petName}
+            </span>
+          </div>
+        )}
+
+        {/* No contacts warning */}
+        {contactCount === 0 && (
+          <Link href="/settings">
+            <div
+              style={{
+                backgroundColor: Colors.bgCard,
+                borderRadius: 16,
+                padding: 24,
+                border: `1px solid ${Colors.gray800}`,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Colors.gray400,
+                  fontWeight: 500,
+                }}
+              >
+                ⚠️ No emergency contacts set up yet.{" "}
+                <span style={{ color: Colors.accentPrimary }}>Add one →</span>
+              </p>
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Bottom actions */}
-      <div className="flex items-center justify-between pt-2 pb-4 mt-auto animate-fade-in-up stagger-6" style={{ opacity: 0 }}>
+      <div
+        className="flex items-center justify-between pt-2 pb-4 mt-auto animate-fade-in-up stagger-6"
+        style={{ opacity: 0 }}
+      >
         <Link
           href="/share"
-          className="text-sm font-medium transition-all hover:opacity-80"
-          style={{ color: "var(--text-secondary)" }}
+          className="transition-all hover:opacity-80"
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: Colors.gray400,
+          }}
         >
           Share proof of life →
         </Link>
@@ -498,8 +820,12 @@ export default function DashboardClient({
             router.push("/");
             router.refresh();
           }}
-          className="text-xs font-medium transition-all hover:opacity-80"
-          style={{ color: "var(--gray-500)" }}
+          className="transition-all hover:opacity-80"
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: Colors.gray500,
+          }}
         >
           Sign out
         </button>
@@ -508,7 +834,14 @@ export default function DashboardClient({
       <PWAInstallPrompt />
 
       {/* Preload logo for other pages */}
-      <Image src="/logo.png" alt="" width={1} height={1} className="hidden" priority />
+      <Image
+        src="/logo.png"
+        alt=""
+        width={1}
+        height={1}
+        className="hidden"
+        priority
+      />
     </main>
   );
 }
