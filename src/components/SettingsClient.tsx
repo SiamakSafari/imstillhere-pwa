@@ -5,6 +5,23 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Profile, EmergencyContact } from "@/lib/types";
+import {
+  AccentColorPicker,
+  AlertPreferences,
+  CheckInWindow,
+  ConfirmationStatus,
+  EmergencyContacts,
+  ExportData,
+  LocationSettings,
+  MemberBadge,
+  NotificationSettings,
+  PetCard,
+  ProofOfLife,
+  ShareLinkManager,
+  SmartHomeIntegration,
+  SmsCheckIn,
+  ThemeToggle,
+} from "./settings";
 
 interface Props {
   profile: Profile | null;
@@ -19,11 +36,25 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
     profile?.timezone ?? (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "America/Los_Angeles")
   );
   const [contacts, setContacts] = useState(initialContacts);
-  const [newName, setNewName] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [newPhone, setNewPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Extended settings state (stored client-side for now, matching Expo AppData model)
+  const [theme, setTheme] = useState<string>("system");
+  const [accentColor, setAccentColor] = useState<string>("green");
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [locationSharingEnabled, setLocationSharingEnabled] = useState(false);
+  const [proofOfLifeEnabled, setProofOfLifeEnabled] = useState(false);
+  const [smsCheckinEnabled, setSmsCheckinEnabled] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
+  const [alertPreference, setAlertPreference] = useState("email");
+  const [contactPhone, setContactPhone] = useState<string | null>(null);
+  const [checkInWindowStart, setCheckInWindowStart] = useState<string | null>(null);
+  const [checkInWindowEnd, setCheckInWindowEnd] = useState<string | null>(null);
+  const [petName] = useState("");
+  const [petNotes, setPetNotes] = useState("");
+
   const router = useRouter();
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -57,30 +88,30 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
     setTimeout(() => setSaved(false), 2000);
   }
 
-  async function handleAddContact(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newName.trim() || !newEmail.trim()) return;
-
+  async function handleAddContact(contact: { name: string; email: string; phone: string | null }) {
     const { data, error } = await supabase!
       .from("emergency_contacts")
       .insert({
         user_id: profile?.id,
-        name: newName.trim(),
-        email: newEmail.trim(),
-        phone: newPhone.trim() || null,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
       })
       .select()
       .single();
 
     if (!error && data) {
       setContacts([...contacts, data]);
-      setNewName("");
-      setNewEmail("");
-      setNewPhone("");
     }
   }
 
+  async function handleUpdateContact(id: string, updates: Partial<EmergencyContact>) {
+    await supabase!.from("emergency_contacts").update(updates).eq("id", id);
+    setContacts(contacts.map((c) => (c.id === id ? { ...c, ...updates } : c)));
+  }
+
   async function handleRemoveContact(id: string) {
+    if (!confirm("Remove this contact?")) return;
     await supabase!.from("emergency_contacts").delete().eq("id", id);
     setContacts(contacts.filter((c) => c.id !== id));
   }
@@ -209,78 +240,139 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
         </button>
       </form>
 
-      {/* Emergency Contacts */}
-      <section className="mb-10">
-        <h2 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
-          Emergency Contacts
+      {/* Divider */}
+      <hr className="mb-8" style={{ borderColor: 'var(--gray-800)' }} />
+
+      {/* Theme */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Theme
         </h2>
-        <p className="text-sm mb-4" style={{ color: 'var(--gray-500)' }}>
-          These people find out if you stop proving you&apos;re alive.
-        </p>
-
-        <div className="space-y-3 mb-6">
-          {contacts.map((contact) => (
-            <div
-              key={contact.id}
-              className="flex items-center justify-between rounded-lg px-4 py-3"
-              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--gray-800)' }}
-            >
-              <div>
-                <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{contact.name}</p>
-                <p className="text-xs" style={{ color: 'var(--gray-500)' }}>{contact.email}{contact.phone ? ` · ${contact.phone}` : ''}</p>
-              </div>
-              <button
-                onClick={() => handleRemoveContact(contact.id)}
-                className="text-sm font-semibold transition-opacity hover:opacity-80 p-2"
-                style={{ color: 'var(--danger)' }}
-                aria-label={`Remove ${contact.name}`}
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          {contacts.length === 0 && (
-            <div className="text-sm text-center py-8 rounded-lg" style={{ backgroundColor: 'var(--card)', color: 'var(--gray-500)' }}>
-              No emergency contacts yet
-            </div>
-          )}
-        </div>
-
-        <form onSubmit={handleAddContact} className="space-y-3">
-          <input
-            type="text"
-            placeholder="Contact name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2"
-            style={{ ...inputStyle, '--tw-ring-color': 'var(--accent-glow)' } as React.CSSProperties}
-          />
-          <input
-            type="email"
-            placeholder="Contact email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2"
-            style={{ ...inputStyle, '--tw-ring-color': 'var(--accent-glow)' } as React.CSSProperties}
-          />
-          <input
-            type="tel"
-            placeholder="Phone number (optional)"
-            value={newPhone}
-            onChange={(e) => setNewPhone(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-2"
-            style={{ ...inputStyle, '--tw-ring-color': 'var(--accent-glow)' } as React.CSSProperties}
-          />
-          <button
-            type="submit"
-            disabled={!newName.trim() || !newEmail.trim()}
-            className="w-full font-bold py-3 rounded-lg transition-all btn-press disabled:opacity-30 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--gray-800)', color: 'var(--accent)' }}
-          >
-            + Add Contact
-          </button>
-        </form>
+        <ThemeToggle value={theme} onChange={setTheme} />
       </section>
+
+      {/* Accent Color */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Accent Color
+        </h2>
+        <AccentColorPicker value={accentColor} onChange={setAccentColor} />
+      </section>
+
+      {/* Sound Effects */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Sound Effects
+        </h2>
+        <div className="flex justify-between items-center py-2">
+          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+            🔊 Enable haptics
+          </span>
+          <button
+            role="switch"
+            aria-checked={soundEnabled}
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className="relative w-11 h-6 rounded-full transition-colors"
+            style={{ backgroundColor: soundEnabled ? 'var(--accent-dark)' : 'var(--gray-700)' }}
+          >
+            <span
+              className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform"
+              style={{
+                backgroundColor: soundEnabled ? 'var(--accent)' : 'var(--gray-400)',
+                transform: soundEnabled ? 'translateX(20px)' : 'translateX(0)',
+              }}
+            />
+          </button>
+        </div>
+      </section>
+
+      <hr className="mb-8" style={{ borderColor: 'var(--gray-800)' }} />
+
+      {/* Check-in Window */}
+      <CheckInWindow
+        checkInWindowStart={checkInWindowStart}
+        checkInWindowEnd={checkInWindowEnd}
+        onUpdate={(updates) => {
+          if ('checkInWindowStart' in updates) setCheckInWindowStart(updates.checkInWindowStart ?? null);
+          if ('checkInWindowEnd' in updates) setCheckInWindowEnd(updates.checkInWindowEnd ?? null);
+        }}
+      />
+
+      {/* Alert Preferences */}
+      <AlertPreferences
+        alertPreference={alertPreference}
+        contactPhone={contactPhone}
+        onUpdate={(updates) => {
+          if (updates.alertPreference) setAlertPreference(updates.alertPreference);
+          if (updates.contactPhone) setContactPhone(updates.contactPhone);
+        }}
+      />
+
+      {/* Emergency Contacts */}
+      <EmergencyContacts
+        contacts={contacts}
+        onAddContact={handleAddContact}
+        onUpdateContact={handleUpdateContact}
+        onDeleteContact={handleRemoveContact}
+      />
+
+      {/* Push Notifications */}
+      <NotificationSettings
+        pushEnabled={pushEnabled}
+        onUpdate={(updates) => setPushEnabled(updates.pushEnabled)}
+      />
+
+      {/* Location */}
+      <LocationSettings
+        locationSharingEnabled={locationSharingEnabled}
+        onUpdate={(updates) => setLocationSharingEnabled(updates.locationSharingEnabled)}
+      />
+
+      {/* Proof of Life */}
+      <ProofOfLife
+        proofOfLifeEnabled={proofOfLifeEnabled}
+        contactName={contacts[0]?.name || ""}
+        onUpdate={(updates) => setProofOfLifeEnabled(updates.proofOfLifeEnabled)}
+      />
+
+      {/* SMS Check-in */}
+      <SmsCheckIn
+        phoneNumber={phoneNumber}
+        smsCheckinEnabled={smsCheckinEnabled}
+        onUpdate={(updates) => {
+          if ('phoneNumber' in updates && updates.phoneNumber !== undefined) setPhoneNumber(updates.phoneNumber);
+          if ('smsCheckinEnabled' in updates && updates.smsCheckinEnabled !== undefined) setSmsCheckinEnabled(updates.smsCheckinEnabled);
+        }}
+      />
+
+      {/* Alert Status */}
+      <ConfirmationStatus />
+
+      {/* Pet Card */}
+      <PetCard
+        petName={petName}
+        petNotes={petNotes}
+        ownerName={displayName}
+        onUpdate={(updates) => setPetNotes(updates.petNotes)}
+      />
+
+      {/* Family Dashboard */}
+      <ShareLinkManager userId={profile?.id} />
+
+      {/* Smart Home Integration */}
+      <SmartHomeIntegration />
+
+      {/* Member Badge */}
+      <MemberBadge
+        memberSince={profile?.created_at || new Date().toISOString()}
+        streak={0}
+        displayName={displayName}
+      />
+
+      {/* Export Data */}
+      <ExportData profileId={profile?.id} />
+
+      <hr className="mb-8" style={{ borderColor: 'var(--gray-800)' }} />
 
       {/* Pause / Resume */}
       <section className="mb-8">
@@ -310,6 +402,35 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
           </p>
         </button>
       </section>
+
+      {/* Reset */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Danger Zone
+        </h2>
+        <button
+          onClick={() => {
+            if (confirm("Reset all settings? This cannot be undone.")) {
+              // Reset logic
+              router.refresh();
+            }
+          }}
+          className="w-full font-bold py-3 rounded-lg transition-all btn-press"
+          style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)', color: 'var(--danger)' }}
+        >
+          Reset App
+        </button>
+      </section>
+
+      {/* Legal */}
+      <section className="mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>
+          Legal
+        </h2>
+        <p className="text-sm" style={{ color: 'var(--gray-600)' }}>ImStillHere v1.0.0</p>
+      </section>
+
+      <div className="h-16" />
     </main>
   );
 }
