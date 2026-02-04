@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 
 type MoodValue = "great" | "good" | "okay" | "low" | "rough";
 
-const MOODS: { value: MoodValue; label: string; color: string }[] = [
-  { value: "great", label: "Great", color: "#7cb87c" },
-  { value: "good", label: "Good", color: "#9fcdaa" },
-  { value: "okay", label: "Okay", color: "#d4c36a" },
-  { value: "low", label: "Low", color: "#d4a574" },
-  { value: "rough", label: "Rough", color: "#c98a8a" },
+const MOODS: { value: MoodValue; label: string; cssVar: string }[] = [
+  { value: "great", label: "Great", cssVar: "--mood-great" },
+  { value: "good", label: "Good", cssVar: "--mood-good" },
+  { value: "okay", label: "Okay", cssVar: "--mood-okay" },
+  { value: "low", label: "Low", cssVar: "--mood-low" },
+  { value: "rough", label: "Rough", cssVar: "--mood-rough" },
 ];
 
 const MOOD_EMOJIS: Record<MoodValue, string> = {
@@ -44,7 +44,6 @@ export default function CheckInFlow({
   const [note, setNote] = useState("");
   const [step, setStep] = useState<"mood" | "note">("mood");
 
-  // Reset state when flow becomes visible
   useEffect(() => {
     if (visible) {
       setSelectedMood(initialMood);
@@ -80,7 +79,8 @@ export default function CheckInFlow({
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 animate-fade-in"
+        className="absolute inset-0 animate-fade-in"
+        style={{ backgroundColor: "var(--bg-overlay)" }}
         onClick={handleCancel}
       />
 
@@ -104,8 +104,10 @@ export default function CheckInFlow({
                   ✓
                 </span>
               </div>
-              <h2 className="text-xl font-bold text-white mb-1">Checked in!</h2>
-              <p className="text-base text-gray-400">How are you feeling today?</p>
+              <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+                Checked in!
+              </h2>
+              <p style={{ color: "var(--gray-400)" }} className="text-base">How are you feeling today?</p>
             </div>
 
             {/* Mood grid */}
@@ -117,10 +119,10 @@ export default function CheckInFlow({
                   className="flex-1 flex flex-col items-center p-2 rounded-md border-2 transition-all"
                   style={{
                     borderColor: selectedMood === mood.value
-                      ? mood.color
+                      ? `var(${mood.cssVar})`
                       : "transparent",
                     backgroundColor: selectedMood === mood.value
-                      ? `${mood.color}30`
+                      ? "var(--accent-subtle)"
                       : "transparent",
                   }}
                 >
@@ -129,7 +131,7 @@ export default function CheckInFlow({
                     className="text-xs font-semibold"
                     style={{
                       color: selectedMood === mood.value
-                        ? mood.color
+                        ? `var(${mood.cssVar})`
                         : "var(--gray-400)",
                     }}
                   >
@@ -144,7 +146,7 @@ export default function CheckInFlow({
               <button
                 onClick={handleSkip}
                 disabled={isSubmitting}
-                className="px-6 py-3 rounded-md text-sm font-semibold text-gray-400 hover:text-gray-300 transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-md text-sm font-semibold transition-colors disabled:opacity-50" style={{ color: "var(--gray-400)" }}
               >
                 Skip
               </button>
@@ -167,12 +169,14 @@ export default function CheckInFlow({
             <div className="flex flex-col items-center mb-6">
               <button
                 onClick={() => setStep("mood")}
-                className="self-start mb-4 text-gray-400 text-base font-semibold hover:text-gray-300 transition-colors"
+                className="self-start mb-4 text-base font-semibold transition-colors" style={{ color: "var(--gray-400)" }}
               >
                 ← Back
               </button>
-              <h2 className="text-xl font-bold text-white mb-1">Add a note</h2>
-              <p className="text-base text-gray-400">Optional: capture any thoughts</p>
+              <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+                Add a note
+              </h2>
+              <p style={{ color: "var(--gray-400)" }} className="text-base">Optional: capture any thoughts</p>
             </div>
 
             {/* Note input */}
@@ -184,13 +188,14 @@ export default function CheckInFlow({
                 maxLength={500}
                 rows={4}
                 autoFocus
-                className="w-full rounded-md p-4 text-base text-white border border-gray-700 outline-none transition-colors focus:border-accent-dark resize-none"
+                className="w-full rounded-md p-4 text-base border border-gray-700 outline-none transition-colors resize-none"
                 style={{
                   backgroundColor: "var(--gray-900)",
+                  color: "var(--text-primary)",
                   minHeight: 120,
                 }}
               />
-              <p className="text-right text-xs text-gray-600 mt-1">
+              <p className="text-right text-xs mt-1" style={{ color: "var(--gray-600)" }}>
                 {note.length}/500
               </p>
             </div>
@@ -203,7 +208,7 @@ export default function CheckInFlow({
                   reset();
                 }}
                 disabled={isSubmitting}
-                className="px-6 py-3 rounded-md text-sm font-semibold text-gray-400 hover:text-gray-300 transition-colors disabled:opacity-50"
+                className="px-6 py-3 rounded-md text-sm font-semibold transition-colors disabled:opacity-50" style={{ color: "var(--gray-400)" }}
               >
                 Skip note
               </button>

@@ -73,12 +73,18 @@ export default function Step3Window({
 
   return (
     <div className="flex-1 overflow-y-auto px-6 pb-10">
-      <button onClick={onBack} className="mb-6 text-gray-400 text-base font-semibold hover:text-gray-300 transition-colors">
+      <button
+        onClick={onBack}
+        className="mb-6 text-base font-semibold transition-colors"
+        style={{ color: "var(--gray-400)" }}
+      >
         ← Back
       </button>
 
-      <h1 className="text-3xl font-extrabold text-white mb-2">Check-in Window</h1>
-      <p className="text-base text-gray-400 mb-8">
+      <h1 className="text-3xl font-extrabold mb-2" style={{ color: "var(--text-primary)" }}>
+        Check-in Window
+      </h1>
+      <p className="text-base mb-8" style={{ color: "var(--gray-400)" }}>
         When do you want to be reminded to check in?
       </p>
 
@@ -91,8 +97,8 @@ export default function Step3Window({
         }}
       >
         <span className="text-2xl">⏰</span>
-        <p className="flex-1 text-sm text-gray-300 leading-5">
-          <span className="font-bold text-white">How it works:</span> If you don&apos;t check in
+        <p className="flex-1 text-sm leading-5" style={{ color: "var(--gray-300)" }}>
+          <span className="font-bold" style={{ color: "var(--text-primary)" }}>How it works:</span> If you don&apos;t check in
           within your window, you&apos;ll get a reminder. If you still don&apos;t respond after 48
           hours, your emergency contact will be notified.
         </p>
@@ -101,8 +107,10 @@ export default function Step3Window({
       {/* Toggle row */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex-1">
-          <p className="text-base text-white font-semibold">Set a check-in window</p>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
+            Set a check-in window
+          </p>
+          <p className="text-sm mt-0.5" style={{ color: "var(--gray-500)" }}>
             {isEnabled ? "Custom schedule" : "Using default (24hr window)"}
           </p>
         </div>
@@ -130,7 +138,9 @@ export default function Step3Window({
       {isEnabled && (
         <div className="space-y-6 mb-8">
           <div className="space-y-2">
-            <label className="block text-base text-gray-300 font-semibold">Check in after</label>
+            <label className="block text-base font-semibold" style={{ color: "var(--gray-300)" }}>
+              Check in after
+            </label>
             <div className="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1">
               {timeOptions.map(({ value, label }) => (
                 <button
@@ -139,7 +149,7 @@ export default function Step3Window({
                   className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold border transition-all"
                   style={{
                     backgroundColor: startTime === value
-                      ? "rgba(74, 222, 128, 0.13)"
+                      ? "var(--accent-subtle)"
                       : "var(--gray-800)",
                     borderColor: startTime === value
                       ? "var(--accent)"
@@ -156,7 +166,9 @@ export default function Step3Window({
           </div>
 
           <div className="space-y-2">
-            <label className="block text-base text-gray-300 font-semibold">Check in before</label>
+            <label className="block text-base font-semibold" style={{ color: "var(--gray-300)" }}>
+              Check in before
+            </label>
             <div className="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1">
               {timeOptions.map(({ value, label }) => (
                 <button
@@ -165,7 +177,7 @@ export default function Step3Window({
                   className="flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold border transition-all"
                   style={{
                     backgroundColor: endTime === value
-                      ? "rgba(74, 222, 128, 0.13)"
+                      ? "var(--accent-subtle)"
                       : "var(--gray-800)",
                     borderColor: endTime === value
                       ? "var(--accent)"
@@ -192,7 +204,7 @@ export default function Step3Window({
             borderColor: "var(--gray-800)",
           }}
         >
-          <p className="text-sm text-gray-300 leading-5">
+          <p className="text-sm leading-5" style={{ color: "var(--gray-300)" }}>
             With the default setting, you just need to check in once every 24
             hours, any time that works for you.
           </p>

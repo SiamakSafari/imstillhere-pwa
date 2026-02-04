@@ -9,35 +9,69 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        dark: {
-          bg: '#0a0a0a',
-          card: '#141414',
-          'card-hover': '#1a1a1a',
-          overlay: 'rgba(0, 0, 0, 0.8)',
-          modal: '#1c1c1e',
-          light: '#1e1e1e',
+        /* ─── Themed colors (driven by CSS vars in globals.css) ─── */
+        // These classes automatically switch between dark & light mode
+        th: {
+          bg:          'var(--bg)',
+          card:        'var(--bg-card)',
+          'card-hover':'var(--bg-card-hover)',
+          overlay:     'var(--bg-overlay)',
+          modal:       'var(--bg-modal)',
+          light:       'var(--bg-light)',
         },
         accent: {
-          DEFAULT: '#4ade80',
-          dark: '#22c55e',
-          darker: '#16a34a',
-          glow: 'rgba(74, 222, 128, 0.4)',
+          DEFAULT: 'var(--accent)',
+          dark:    'var(--accent-dark)',
+          darker:  'var(--accent-darker)',
+          glow:    'var(--accent-glow)',
+          subtle:  'var(--accent-subtle)',
         },
+        // Themed grays — swap between dark and light palette
         gray: {
-          50: '#fafafa',
-          100: '#f4f4f5',
-          200: '#e4e4e7',
-          300: '#d4d4d8',
-          400: '#a1a1aa',
-          500: '#71717a',
-          600: '#52525b',
-          700: '#3f3f46',
-          800: '#27272a',
-          900: '#18181b',
+          50:  'var(--gray-50)',
+          100: 'var(--gray-100)',
+          200: 'var(--gray-200)',
+          300: 'var(--gray-300)',
+          400: 'var(--gray-400)',
+          500: 'var(--gray-500)',
+          600: 'var(--gray-600)',
+          700: 'var(--gray-700)',
+          800: 'var(--gray-800)',
+          900: 'var(--gray-900)',
         },
-        danger: '#ef4444',
-        warning: '#fbbf24',
-        info: '#3b82f6',
+        // Semantic
+        danger:  'var(--danger)',
+        warning: 'var(--warning)',
+        info:    'var(--info)',
+        // Moods
+        mood: {
+          great: 'var(--mood-great)',
+          good:  'var(--mood-good)',
+          okay:  'var(--mood-okay)',
+          low:   'var(--mood-low)',
+          rough: 'var(--mood-rough)',
+        },
+
+        /* ─── Legacy / compat aliases ─── */
+        // Keep these so old `dark-bg`, `dark-card` classes still work
+        dark: {
+          bg:          'var(--bg)',
+          card:        'var(--bg-card)',
+          'card-hover':'var(--bg-card-hover)',
+          overlay:     'var(--bg-overlay)',
+          modal:       'var(--bg-modal)',
+          light:       'var(--bg-light)',
+        },
+      },
+      textColor: {
+        primary:   'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+      },
+      borderColor: {
+        card: 'var(--card-border)',
+      },
+      backgroundColor: {
+        card: 'var(--bg-card)',
       },
       borderRadius: {
         'sm': '8px',
@@ -51,8 +85,8 @@ const config: Config = {
       },
       keyframes: {
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(74, 222, 128, 0.4)' },
-          '50%': { boxShadow: '0 0 40px 10px rgba(74, 222, 128, 0.4)' },
+          '0%, 100%': { boxShadow: '0 0 0 0 var(--accent-glow)' },
+          '50%': { boxShadow: '0 0 40px 10px var(--accent-glow)' },
         },
         'check-pop': {
           '0%': { transform: 'scale(0)', opacity: '0' },

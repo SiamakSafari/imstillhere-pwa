@@ -40,18 +40,21 @@ export default function Step4Pet({
       <button
         onClick={onBack}
         disabled={isSubmitting}
-        className="mb-6 text-gray-400 text-base font-semibold hover:text-gray-300 transition-colors disabled:opacity-50"
+        className="mb-6 text-base font-semibold transition-colors disabled:opacity-50"
+        style={{ color: "var(--gray-400)" }}
       >
         ← Back
       </button>
 
-      <h1 className="text-3xl font-extrabold text-white mb-2">Got a Pet?</h1>
-      <p className="text-base text-gray-400 mb-8">
+      <h1 className="text-3xl font-extrabold mb-2" style={{ color: "var(--text-primary)" }}>
+        Got a Pet?
+      </h1>
+      <p className="text-base mb-8" style={{ color: "var(--gray-400)" }}>
         Optional: Include pet care info in alerts
       </p>
 
       <div className="mb-5">
-        <label className="block text-base text-gray-300 font-semibold mb-2">
+        <label className="block text-base font-semibold mb-2" style={{ color: "var(--gray-300)" }}>
           Pet&apos;s name
         </label>
         <input
@@ -60,14 +63,18 @@ export default function Step4Pet({
           onChange={(e) => setPetName(e.target.value)}
           placeholder="Fluffy, Max, Buddy..."
           autoFocus
-          className="w-full rounded-md p-4 text-base text-white border border-gray-700 outline-none transition-colors focus:border-accent-dark"
-          style={{ backgroundColor: "var(--gray-900)" }}
+          className="w-full rounded-md p-4 text-base border outline-none transition-colors"
+          style={{
+            backgroundColor: "var(--gray-900)",
+            color: "var(--text-primary)",
+            borderColor: "var(--gray-700)",
+          }}
         />
       </div>
 
       {petName.trim().length > 0 && (
         <div className="mb-5">
-          <label className="block text-base text-gray-300 font-semibold mb-2">
+          <label className="block text-base font-semibold mb-2" style={{ color: "var(--gray-300)" }}>
             Care notes (optional)
           </label>
           <textarea
@@ -75,8 +82,13 @@ export default function Step4Pet({
             onChange={(e) => setPetNotes(e.target.value)}
             placeholder="Feeding schedule, medications, vet info..."
             rows={3}
-            className="w-full rounded-md p-4 text-base text-white border border-gray-700 outline-none transition-colors focus:border-accent-dark resize-none"
-            style={{ backgroundColor: "var(--gray-900)", minHeight: 100 }}
+            className="w-full rounded-md p-4 text-base border outline-none transition-colors resize-none"
+            style={{
+              backgroundColor: "var(--gray-900)",
+              color: "var(--text-primary)",
+              borderColor: "var(--gray-700)",
+              minHeight: 100,
+            }}
           />
         </div>
       )}
@@ -98,7 +110,8 @@ export default function Step4Pet({
           <button
             onClick={handleSkip}
             disabled={isSubmitting}
-            className="w-full py-3 text-sm font-semibold text-gray-500 hover:text-gray-400 transition-colors disabled:opacity-50"
+            className="w-full py-3 text-sm font-semibold transition-colors disabled:opacity-50"
+            style={{ color: "var(--gray-500)" }}
           >
             Skip this step
           </button>

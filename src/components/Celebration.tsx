@@ -55,7 +55,6 @@ export default function Celebration({ streak, onDismiss }: CelebrationProps) {
 
   useEffect(() => {
     if (!milestone) { onDismiss(); return; }
-    // Trigger enter animation
     requestAnimationFrame(() => setVisible(true));
     const timer = setTimeout(onDismiss, 10000);
     return () => clearTimeout(timer);
@@ -72,7 +71,7 @@ export default function Celebration({ streak, onDismiss }: CelebrationProps) {
       <div
         className="absolute inset-0 transition-opacity duration-300"
         style={{
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          backgroundColor: "var(--bg-overlay)",
           opacity: visible ? 1 : 0,
         }}
       />
@@ -82,18 +81,15 @@ export default function Celebration({ streak, onDismiss }: CelebrationProps) {
         className="relative w-full max-w-sm rounded-xl p-8 text-center border-2 transition-all duration-500"
         onClick={(e) => e.stopPropagation()}
         style={{
-          backgroundColor: "var(--card)",
+          backgroundColor: "var(--bg-card)",
           borderColor: "var(--accent)",
-          boxShadow: "0 0 40px var(--accent-glow)",
+          boxShadow: `0 0 40px var(--accent-glow)`,
           opacity: visible ? 1 : 0,
           transform: visible ? "scale(1)" : "scale(0.8)",
         }}
       >
         <div className="text-6xl mb-4">{milestone.emoji}</div>
-        <p
-          className="text-sm uppercase tracking-widest mb-1"
-          style={{ color: "var(--gray-400)" }}
-        >
+        <p className="text-sm uppercase tracking-widest mb-1" style={{ color: "var(--gray-400)" }}>
           {milestone.label}
         </p>
         <h2
@@ -102,10 +98,10 @@ export default function Celebration({ streak, onDismiss }: CelebrationProps) {
         >
           {milestone.title}
         </h2>
-        <p className="text-lg font-semibold text-white mb-4">
+        <p className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
           {streak} Day Streak
         </p>
-        <p className="text-base text-gray-300 leading-6 mb-8">
+        <p className="text-base leading-6 mb-8" style={{ color: "var(--gray-300)" }}>
           {milestone.message}
         </p>
         <button

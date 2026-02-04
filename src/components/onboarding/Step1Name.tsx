@@ -22,15 +22,15 @@ export default function Step1Name({ name: initialName, onUpdate, onNext }: Step1
 
   return (
     <div className="flex-1 flex flex-col justify-center px-6">
-      <h1 className="text-3xl font-extrabold text-white text-center mb-2">
+      <h1 className="text-3xl font-extrabold text-center mb-2" style={{ color: "var(--text-primary)" }}>
         Welcome to Still Here
       </h1>
-      <p className="text-base text-gray-400 text-center mb-10">
+      <p className="text-base text-center mb-10" style={{ color: "var(--gray-400)" }}>
         A simple daily check-in for peace of mind
       </p>
 
       <div className="mb-6">
-        <label className="block text-base text-gray-300 font-semibold mb-2">
+        <label className="block text-base font-semibold mb-2" style={{ color: "var(--gray-300)" }}>
           What&apos;s your name?
         </label>
         <input
@@ -41,15 +41,15 @@ export default function Step1Name({ name: initialName, onUpdate, onNext }: Step1
           placeholder="Enter your name"
           autoFocus
           autoComplete="name"
-          className={`w-full rounded-md p-4 text-lg text-white border outline-none transition-colors
-            ${error
-              ? "border-danger bg-gray-900"
-              : "border-gray-700 bg-gray-900 focus:border-accent-dark"
-            }`}
-          style={{ backgroundColor: "var(--gray-900)" }}
+          className="w-full rounded-md p-4 text-lg border outline-none transition-colors"
+          style={{
+            backgroundColor: "var(--gray-900)",
+            color: "var(--text-primary)",
+            borderColor: error ? "var(--danger)" : "var(--gray-700)",
+          }}
         />
         {error && (
-          <p className="text-danger text-sm mt-1">{error}</p>
+          <p className="text-sm mt-1" style={{ color: "var(--danger)" }}>{error}</p>
         )}
       </div>
 

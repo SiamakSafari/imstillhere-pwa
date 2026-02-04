@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-dvh flex flex-col" style={{ backgroundColor: '#0a0a0a', color: 'var(--text-primary)' }}>
+    <main className="min-h-dvh flex flex-col" style={{ backgroundColor: 'var(--bg)', color: 'var(--text-primary)' }}>
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-4xl mx-auto w-full">
         <div className="flex items-center gap-3">

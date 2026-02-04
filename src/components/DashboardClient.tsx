@@ -55,23 +55,6 @@ const VALUE_TO_LABEL: Record<number, string> = {
   1: "Rough",
 };
 
-/* ─── Theme: CSS variable references ─── */
-const Colors = {
-  bgDark: "var(--bg)",
-  bgCard: "var(--bg-card)",
-  bgCardHover: "var(--bg-card-hover)",
-  accentPrimary: "var(--accent)",
-  accentDark: "var(--accent-dark)",
-  accentDarker: "var(--accent-darker)",
-  accentGlow: "var(--accent-glow)",
-  gray200: "var(--gray-200)",
-  gray400: "var(--gray-400)",
-  gray500: "var(--gray-500)",
-  gray700: "var(--gray-700)",
-  gray800: "var(--gray-800)",
-  white: "var(--text-primary)",
-};
-
 /* ─── Helpers (from Expo utils/time.ts) ─── */
 interface Props {
   profile: Profile | null;
@@ -228,7 +211,7 @@ export default function DashboardClient({
   return (
     <main
       className="min-h-dvh flex flex-col px-5 pt-5 pb-24 max-w-lg mx-auto"
-      style={{ backgroundColor: Colors.bgDark }}
+      style={{ backgroundColor: "var(--bg)" }}
     >
       <Confetti trigger={showConfetti} streak={streak} />
       <CheckInFlow
@@ -246,16 +229,16 @@ export default function DashboardClient({
 
       {/* ===== TOP BAR: Avatar + Greeting + Settings ===== */}
       <header className="flex items-center justify-between mb-4 animate-fade-in-up">
-        {/* Avatar — 44px, #16a34a bg, 2px solid #4ade80 border */}
+        {/* Avatar — 44px */}
         <div
           className="flex items-center justify-center font-bold"
           style={{
             width: 44,
             height: 44,
             borderRadius: 22,
-            backgroundColor: Colors.accentDarker,
-            border: `2px solid ${Colors.accentPrimary}`,
-            color: Colors.white,
+            backgroundColor: "var(--accent-darker)",
+            border: "2px solid var(--accent)",
+            color: "var(--bg)",
             fontSize: 16,
           }}
         >
@@ -267,7 +250,7 @@ export default function DashboardClient({
           href="/settings"
           aria-label="Settings"
           className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
-          style={{ backgroundColor: Colors.bgCard }}
+          style={{ backgroundColor: "var(--bg-card)" }}
         >
           <svg
             width="20"
@@ -278,7 +261,7 @@ export default function DashboardClient({
             strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{ color: Colors.gray400 }}
+            style={{ color: "var(--gray-400)" }}
           >
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -286,23 +269,37 @@ export default function DashboardClient({
         </Link>
       </header>
 
+      {/* ===== 💀 TAGLINE ===== */}
+      <div className="flex items-center gap-2 mb-1 animate-fade-in-up" style={{ opacity: 0 }}>
+        <span style={{ fontSize: 20 }}>💀</span>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            color: "var(--accent)",
+          }}
+        >
+          I am still alive
+        </span>
+      </div>
+
       {/* ===== GREETING (Expo: Greeting.tsx) ===== */}
-      {/* fontSize: 24 (FontSize.xl), fontWeight 700, marginBottom: 16 (Spacing.md) */}
       <div className="animate-fade-in-up stagger-1" style={{ marginBottom: 16 }}>
         <p
           style={{
             fontSize: 24,
             fontWeight: 700,
-            color: Colors.white,
+            color: "var(--text-primary)",
           }}
         >
           {getGreeting()},{" "}
-          <span style={{ color: Colors.accentPrimary }}>{name}</span>
+          <span style={{ color: "var(--accent)" }}>{name}</span>
         </p>
       </div>
 
       {/* ===== CHECK-IN BUTTON (Expo: CheckInButton.tsx) ===== */}
-      {/* wrapper: 240x240, button: 180x180, glow ring: 220x220 */}
       <div
         className="flex flex-col items-center animate-fade-in-up stagger-2"
         style={{ marginBottom: 24, opacity: 0 }}
@@ -311,7 +308,7 @@ export default function DashboardClient({
           className="relative flex items-center justify-center"
           style={{ width: 240, height: 240 }}
         >
-          {/* Glow ring — 220px, pulsing when not checked in */}
+          {/* Glow ring */}
           {!checkedIn && (
             <div
               className="absolute animate-pulse-scale"
@@ -319,13 +316,13 @@ export default function DashboardClient({
                 width: 220,
                 height: 220,
                 borderRadius: 110,
-                backgroundColor: Colors.accentGlow,
+                backgroundColor: "var(--accent-glow)",
                 opacity: 0.3,
               }}
             />
           )}
 
-          {/* Progress circle ring (streak > 0) — 200px, 4px border */}
+          {/* Progress circle ring */}
           {streak > 0 && (
             <div
               className="absolute"
@@ -333,7 +330,7 @@ export default function DashboardClient({
                 width: 200,
                 height: 200,
                 borderRadius: 100,
-                border: `4px solid ${Colors.gray800}`,
+                border: "4px solid var(--gray-800)",
               }}
             />
           )}
@@ -346,9 +343,9 @@ export default function DashboardClient({
             style={{
               width: 180,
               height: 180,
-              backgroundColor: checkedIn ? Colors.gray800 : Colors.accentPrimary,
+              backgroundColor: checkedIn ? "var(--gray-800)" : "var(--accent)",
               border: checkedIn
-                ? `2px solid ${Colors.accentDark}`
+                ? "2px solid var(--accent-dark)"
                 : "none",
               boxShadow: checkedIn
                 ? "none"
@@ -361,18 +358,17 @@ export default function DashboardClient({
               <div
                 className="w-10 h-10 border-[3px] rounded-full animate-spin"
                 style={{
-                  borderColor: "rgba(10, 10, 10, 0.3)",
-                  borderTopColor: Colors.bgDark,
+                  borderColor: "color-mix(in srgb, var(--bg) 30%, transparent)",
+                  borderTopColor: "var(--bg)",
                 }}
               />
             ) : checkedIn ? (
               <div className="flex flex-col items-center">
                 <div className="flex flex-col items-center">
-                  {/* Checkmark: fontSize 52, fontWeight 800, marginBottom -4 */}
                   <span
                     style={{
                       fontSize: 52,
-                      color: Colors.accentPrimary,
+                      color: "var(--accent)",
                       fontWeight: 800,
                       marginBottom: -4,
                       lineHeight: 1,
@@ -380,21 +376,19 @@ export default function DashboardClient({
                   >
                     ✓
                   </span>
-                  {/* Checkmark bar: 32x8, borderRadius 4 */}
                   <div
                     style={{
                       width: 32,
                       height: 8,
                       borderRadius: 4,
-                      backgroundColor: Colors.accentPrimary,
+                      backgroundColor: "var(--accent)",
                     }}
                   />
                 </div>
-                {/* "Done" label: fontSize 16, fontWeight 600, marginTop 4 */}
                 <span
                   style={{
                     fontSize: 16,
-                    color: Colors.accentPrimary,
+                    color: "var(--accent)",
                     fontWeight: 600,
                     marginTop: 4,
                   }}
@@ -404,22 +398,21 @@ export default function DashboardClient({
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                {/* "Check In": fontSize 32 (FontSize.xxl), fontWeight 800, letterSpacing -0.5 */}
                 <span
                   style={{
                     fontSize: 32,
                     fontWeight: 800,
-                    color: Colors.bgDark,
+                    color: "var(--bg)",
                     letterSpacing: -0.5,
                   }}
                 >
                   Check In
                 </span>
-                {/* "Tap to confirm": fontSize 14, color rgba(10,10,10,0.6), fontWeight 500, marginTop 4 */}
                 <span
                   style={{
                     fontSize: 14,
-                    color: "rgba(10, 10, 10, 0.6)",
+                    color: "var(--bg)",
+                    opacity: 0.6,
                     fontWeight: 500,
                     marginTop: 4,
                   }}
@@ -433,7 +426,6 @@ export default function DashboardClient({
       </div>
 
       {/* ===== STREAK CARD (Expo: Stats.tsx) ===== */}
-      {/* card: bgCard, borderRadius 16, padding 24, border 1px gray800 */}
       <div
         className="animate-fade-in-up stagger-3"
         style={{ marginBottom: 24, opacity: 0 }}
@@ -442,13 +434,13 @@ export default function DashboardClient({
           className="cursor-pointer card-hover"
           onClick={() => setExpanded(!expanded)}
           style={{
-            backgroundColor: Colors.bgCard,
+            backgroundColor: "var(--bg-card)",
             borderRadius: 16,
             padding: 24,
-            border: `1px solid ${Colors.gray800}`,
+            border: "1px solid var(--gray-800)",
           }}
         >
-          {/* Header row: fire icon + "Streak" + expand chevron */}
+          {/* Header row */}
           <div
             className="flex items-center"
             style={{ marginBottom: 8 }}
@@ -458,7 +450,7 @@ export default function DashboardClient({
               className="flex-1"
               style={{
                 fontSize: 14,
-                color: Colors.gray400,
+                color: "var(--gray-400)",
                 fontWeight: 600,
               }}
             >
@@ -467,7 +459,7 @@ export default function DashboardClient({
             <span
               style={{
                 fontSize: 16,
-                color: Colors.gray500,
+                color: "var(--gray-500)",
                 transform: expanded ? "rotate(180deg)" : "none",
                 transition: "transform 0.2s ease",
                 display: "inline-block",
@@ -477,13 +469,13 @@ export default function DashboardClient({
             </span>
           </div>
 
-          {/* Value row: streak number + "days" */}
+          {/* Value row */}
           <div className="flex items-baseline" style={{ gap: 8 }}>
             <span
               style={{
                 fontSize: 48,
                 fontWeight: 800,
-                color: checkedIn ? Colors.accentPrimary : Colors.gray400,
+                color: checkedIn ? "var(--accent)" : "var(--gray-400)",
               }}
             >
               {streak}
@@ -491,7 +483,7 @@ export default function DashboardClient({
             <span
               style={{
                 fontSize: 18,
-                color: Colors.gray500,
+                color: "var(--gray-500)",
                 fontWeight: 600,
               }}
             >
@@ -499,13 +491,13 @@ export default function DashboardClient({
             </span>
           </div>
 
-          {/* Progress bar (streak > 0) */}
+          {/* Progress bar */}
           {streak > 0 && (
             <div style={{ marginTop: 16 }}>
               <div
                 style={{
                   height: 4,
-                  backgroundColor: Colors.gray800,
+                  backgroundColor: "var(--gray-800)",
                   borderRadius: 2,
                   overflow: "hidden",
                 }}
@@ -514,7 +506,7 @@ export default function DashboardClient({
                   style={{
                     height: "100%",
                     width: `${Math.min(progress, 100)}%`,
-                    backgroundColor: Colors.accentPrimary,
+                    backgroundColor: "var(--accent)",
                     borderRadius: 2,
                     transition: "width 0.5s ease",
                   }}
@@ -523,7 +515,7 @@ export default function DashboardClient({
               <p
                 style={{
                   fontSize: 12,
-                  color: Colors.gray500,
+                  color: "var(--gray-500)",
                   marginTop: 4,
                 }}
               >
@@ -569,18 +561,17 @@ export default function DashboardClient({
           {/* Expanded: weekly section */}
           {expanded && (
             <div style={{ marginTop: 16 }}>
-              {/* Divider */}
               <div
                 style={{
                   height: 1,
-                  backgroundColor: Colors.gray800,
+                  backgroundColor: "var(--gray-800)",
                   marginBottom: 16,
                 }}
               />
               <p
                 style={{
                   fontSize: 14,
-                  color: Colors.gray400,
+                  color: "var(--gray-400)",
                   fontWeight: 600,
                   marginBottom: 16,
                 }}
@@ -593,7 +584,7 @@ export default function DashboardClient({
                     style={{
                       fontSize: 24,
                       fontWeight: 700,
-                      color: Colors.white,
+                      color: "var(--text-primary)",
                     }}
                   >
                     {weeklySummary.daysCheckedIn}
@@ -601,7 +592,7 @@ export default function DashboardClient({
                   <span
                     style={{
                       fontSize: 12,
-                      color: Colors.gray500,
+                      color: "var(--gray-500)",
                       fontWeight: 600,
                       marginTop: 2,
                     }}
@@ -614,7 +605,7 @@ export default function DashboardClient({
                     style={{
                       fontSize: 24,
                       fontWeight: 700,
-                      color: Colors.white,
+                      color: "var(--text-primary)",
                     }}
                   >
                     {weeklySummary.avgMoodLabel}
@@ -622,7 +613,7 @@ export default function DashboardClient({
                   <span
                     style={{
                       fontSize: 12,
-                      color: Colors.gray500,
+                      color: "var(--gray-500)",
                       fontWeight: 600,
                       marginTop: 2,
                     }}
@@ -635,7 +626,7 @@ export default function DashboardClient({
           )}
         </div>
 
-        {/* Protected badge (after check-in) — Expo: protectedBadge */}
+        {/* Protected badge */}
         {checkedIn && (
           <div className="flex justify-center" style={{ marginTop: 16 }}>
             <span
@@ -646,7 +637,7 @@ export default function DashboardClient({
                 paddingRight: 16,
                 paddingTop: 8,
                 paddingBottom: 8,
-                color: Colors.accentPrimary,
+                color: "var(--accent)",
                 fontSize: 14,
                 fontWeight: 700,
               }}
@@ -659,31 +650,29 @@ export default function DashboardClient({
         {/* Last check-in time */}
         {lastCheckInFormatted && (
           <div className="flex justify-center" style={{ marginTop: 8 }}>
-            <span style={{ color: Colors.gray500, fontSize: 12 }}>
+            <span style={{ color: "var(--gray-500)", fontSize: 12 }}>
               🕐 Last check-in: {lastCheckInFormatted}
             </span>
           </div>
         )}
       </div>
 
-      {/* ===== DAILY QUOTE CARD (Expo: DailyQuote.tsx) ===== */}
-      {/* In a card — bgCard, borderRadius 16, padding 24, border 1px gray800, marginBottom 24 */}
+      {/* ===== DAILY QUOTE CARD ===== */}
       <div
         className="animate-fade-in-up stagger-4"
         style={{
-          backgroundColor: Colors.bgCard,
+          backgroundColor: "var(--bg-card)",
           borderRadius: 16,
           padding: 24,
-          border: `1px solid ${Colors.gray800}`,
+          border: "1px solid var(--gray-800)",
           marginBottom: 24,
           opacity: 0,
         }}
       >
-        {/* Quote icon: fontSize 24, accentPrimary, opacity 0.5, marginBottom 8 */}
         <span
           style={{
             fontSize: 24,
-            color: Colors.accentPrimary,
+            color: "var(--accent)",
             opacity: 0.5,
             display: "block",
             marginBottom: 8,
@@ -691,23 +680,21 @@ export default function DashboardClient({
         >
           ❝
         </span>
-        {/* Quote text: fontSize 16, gray200, italic, lineHeight 24 */}
         <p
           style={{
             fontSize: 16,
-            color: Colors.gray200,
+            color: "var(--gray-200)",
             fontStyle: "italic",
             lineHeight: "24px",
           }}
         >
           {quote.text}
         </p>
-        {/* Author: fontSize 14, gray500, marginTop 8 */}
         {quote.author && (
           <p
             style={{
               fontSize: 14,
-              color: Colors.gray500,
+              color: "var(--gray-500)",
               marginTop: 8,
             }}
           >
@@ -716,8 +703,7 @@ export default function DashboardClient({
         )}
       </div>
 
-      {/* ===== EMERGENCY CONTACT CARD (Expo: ContactInfo.tsx) ===== */}
-      {/* card: bgCard, borderRadius 16, padding 24, border 1px gray800 */}
+      {/* ===== EMERGENCY CONTACT CARD ===== */}
       <div
         className="animate-fade-in-up stagger-5"
         style={{ marginBottom: 24, opacity: 0 }}
@@ -725,14 +711,13 @@ export default function DashboardClient({
         {(contactName || contactEmail || contactCount > 0) && (
           <div
             style={{
-              backgroundColor: Colors.bgCard,
+              backgroundColor: "var(--bg-card)",
               borderRadius: 16,
               padding: 24,
-              border: `1px solid ${Colors.gray800}`,
+              border: "1px solid var(--gray-800)",
               marginBottom: 16,
             }}
           >
-            {/* Header: icon + "EMERGENCY CONTACT" */}
             <div
               className="flex items-center"
               style={{ gap: 8, marginBottom: 8 }}
@@ -741,7 +726,7 @@ export default function DashboardClient({
               <span
                 style={{
                   fontSize: 12,
-                  color: Colors.gray500,
+                  color: "var(--gray-500)",
                   fontWeight: 600,
                   textTransform: "uppercase",
                   letterSpacing: 1,
@@ -750,13 +735,12 @@ export default function DashboardClient({
                 Emergency Contact
               </span>
             </div>
-            {/* Content */}
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {contactName && (
                 <span
                   style={{
                     fontSize: 16,
-                    color: Colors.white,
+                    color: "var(--text-primary)",
                     fontWeight: 600,
                   }}
                 >
@@ -764,7 +748,7 @@ export default function DashboardClient({
                 </span>
               )}
               {contactEmail && (
-                <span style={{ fontSize: 14, color: Colors.gray400 }}>
+                <span style={{ fontSize: 14, color: "var(--gray-400)" }}>
                   {contactEmail}
                 </span>
               )}
@@ -772,7 +756,7 @@ export default function DashboardClient({
                 <span
                   style={{
                     fontSize: 14,
-                    color: Colors.gray400,
+                    color: "var(--gray-400)",
                   }}
                 >
                   {contactCount} contact{contactCount !== 1 ? "s" : ""} configured
@@ -782,14 +766,14 @@ export default function DashboardClient({
           </div>
         )}
 
-        {/* Pet card (if petName provided) */}
+        {/* Pet card */}
         {petName && (
           <div
             style={{
-              backgroundColor: Colors.bgCard,
+              backgroundColor: "var(--bg-card)",
               borderRadius: 16,
               padding: 24,
-              border: `1px solid ${Colors.gray800}`,
+              border: "1px solid var(--gray-800)",
               marginBottom: 16,
             }}
           >
@@ -801,7 +785,7 @@ export default function DashboardClient({
               <span
                 style={{
                   fontSize: 12,
-                  color: Colors.gray500,
+                  color: "var(--gray-500)",
                   fontWeight: 600,
                   textTransform: "uppercase",
                   letterSpacing: 1,
@@ -813,7 +797,7 @@ export default function DashboardClient({
             <span
               style={{
                 fontSize: 16,
-                color: Colors.white,
+                color: "var(--text-primary)",
                 fontWeight: 600,
               }}
             >
@@ -827,21 +811,21 @@ export default function DashboardClient({
           <Link href="/settings">
             <div
               style={{
-                backgroundColor: Colors.bgCard,
+                backgroundColor: "var(--bg-card)",
                 borderRadius: 16,
                 padding: 24,
-                border: `1px solid ${Colors.gray800}`,
+                border: "1px solid var(--gray-800)",
               }}
             >
               <p
                 style={{
                   fontSize: 14,
-                  color: Colors.gray400,
+                  color: "var(--gray-400)",
                   fontWeight: 500,
                 }}
               >
                 ⚠️ No emergency contacts set up yet.{" "}
-                <span style={{ color: Colors.accentPrimary }}>Add one →</span>
+                <span style={{ color: "var(--accent)" }}>Add one →</span>
               </p>
             </div>
           </Link>
@@ -853,7 +837,6 @@ export default function DashboardClient({
         <SnoozeButton
           snoozeUntil={null}
           onSnooze={(until) => {
-            // In a full implementation, save to Supabase
             console.log("Snoozed until:", until);
           }}
           onCancelSnooze={() => {
@@ -883,7 +866,7 @@ export default function DashboardClient({
           style={{
             fontSize: 14,
             fontWeight: 500,
-            color: Colors.gray400,
+            color: "var(--gray-400)",
           }}
         >
           Share proof of life →
@@ -898,7 +881,7 @@ export default function DashboardClient({
           style={{
             fontSize: 12,
             fontWeight: 500,
-            color: Colors.gray500,
+            color: "var(--gray-500)",
           }}
         >
           Sign out
