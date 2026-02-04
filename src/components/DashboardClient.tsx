@@ -269,23 +269,39 @@ export default function DashboardClient({
         </Link>
       </header>
 
-      {/* ===== 💀 TAGLINE ===== */}
-      <div className="flex items-center gap-2 mb-1 animate-fade-in-up" style={{ opacity: 0 }}>
-        <span style={{ fontSize: 20 }}>💀</span>
-        <span
-          style={{
-            fontSize: 13,
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-            color: "var(--accent)",
-          }}
-        >
-          I am still alive
-        </span>
+      {/* ===== 💀 BRAND TAGLINE ===== */}
+      <div className="animate-fade-in-up" style={{ marginBottom: 20, opacity: 0 }}>
+        <div className="flex items-center gap-3">
+          <span style={{ fontSize: 36, lineHeight: 1 }}>☠️</span>
+          <div>
+            <p
+              style={{
+                fontSize: 20,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "var(--text-primary)",
+                lineHeight: 1.2,
+              }}
+            >
+              I&apos;m Still Here
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--accent)",
+                marginTop: 2,
+              }}
+            >
+              Proof of life · Daily
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* ===== GREETING (Expo: Greeting.tsx) ===== */}
+      {/* ===== GREETING ===== */}
       <div className="animate-fade-in-up stagger-1" style={{ marginBottom: 16 }}>
         <p
           style={{

@@ -83,7 +83,7 @@ export default function ActivityTimer({
     <div
       className="rounded-2xl p-6"
       style={{
-        backgroundColor: isGracePeriod ? "rgba(239, 68, 68, 0.1)" : "var(--card)",
+        backgroundColor: isGracePeriod ? "color-mix(in srgb, var(--danger) 10%, var(--bg))" : "var(--card)",
         border: `1px solid ${isGracePeriod ? "var(--danger)" : "var(--gray-800)"}`,
       }}
     >
@@ -108,7 +108,7 @@ export default function ActivityTimer({
       {isGracePeriod && (
         <div
           className="rounded-lg p-3 mb-4"
-          style={{ backgroundColor: "rgba(239, 68, 68, 0.2)" }}
+          style={{ backgroundColor: "color-mix(in srgb, var(--danger) 20%, var(--bg))" }}
         >
           <p className="text-sm text-center font-medium" style={{ color: "var(--danger)" }}>
             Timer expired! {contactName || "Your contact"} will be alerted in {formatTime(timeRemaining)}

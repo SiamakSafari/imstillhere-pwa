@@ -75,7 +75,7 @@ export default function FamilyShareCard({ userId }: FamilyShareCardProps) {
             onClick={handleShare}
             className="w-full py-3 px-4 rounded-lg text-sm font-semibold text-center transition-all btn-press"
             style={{
-              backgroundColor: copied ? "rgba(74, 222, 128, 0.1)" : "var(--gray-800)",
+              backgroundColor: copied ? "var(--accent-subtle)" : "var(--gray-800)",
               border: `1px solid ${copied ? "var(--accent)" : "var(--gray-700)"}`,
               color: "var(--gray-300)",
             }}

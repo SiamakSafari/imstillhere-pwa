@@ -58,7 +58,7 @@ export const SmartHomeIntegration: React.FC = () => {
       {newApiKey && (
         <div
           className="rounded-md p-3 mb-4 space-y-2"
-          style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)', border: '1px solid var(--warning)' }}
+          style={{ backgroundColor: 'color-mix(in srgb, var(--warning) 10%, var(--bg))', border: '1px solid var(--warning)' }}
         >
           <p className="text-sm font-semibold" style={{ color: 'var(--warning)' }}>
             ⚠️ Save this API key now! You won&apos;t see it again.

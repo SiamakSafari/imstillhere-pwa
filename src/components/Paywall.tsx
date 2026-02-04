@@ -81,7 +81,7 @@ export default function Paywall({ onSubscribed, onSkip }: PaywallProps) {
           className="w-full text-center rounded-2xl p-6 border-2 transition-all"
           style={{
             backgroundColor:
-              selectedPlan === "annual" ? "rgba(74, 222, 128, 0.06)" : "var(--card)",
+              selectedPlan === "annual" ? "var(--accent-subtle)" : "var(--card)",
             borderColor:
               selectedPlan === "annual" ? "var(--accent)" : "var(--gray-700)",
           }}
@@ -115,7 +115,7 @@ export default function Paywall({ onSubscribed, onSkip }: PaywallProps) {
           className="w-full text-center rounded-2xl p-6 border-2 transition-all"
           style={{
             backgroundColor:
-              selectedPlan === "monthly" ? "rgba(74, 222, 128, 0.06)" : "var(--card)",
+              selectedPlan === "monthly" ? "var(--accent-subtle)" : "var(--card)",
             borderColor:
               selectedPlan === "monthly" ? "var(--accent)" : "var(--gray-700)",
           }}

@@ -433,7 +433,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
             }
           }}
           className="w-full font-bold py-3 rounded-lg transition-all btn-press"
-          style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)', color: 'var(--danger)' }}
+          style={{ backgroundColor: 'color-mix(in srgb, var(--danger) 10%, var(--bg))', border: '1px solid var(--danger)', color: 'var(--danger)' }}
         >
           Reset App
         </button>

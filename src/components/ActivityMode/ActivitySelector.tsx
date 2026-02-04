@@ -151,7 +151,7 @@ export default function ActivitySelector({ onStartActivity, onCancel, contactNam
                   className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all"
                   style={{
                     backgroundColor:
-                      duration === opt.value ? "rgba(22, 163, 106, 0.2)" : "var(--bg-light)",
+                      duration === opt.value ? "var(--accent-subtle)" : "var(--bg-light)",
                     border: `1px solid ${duration === opt.value ? "var(--accent)" : "var(--gray-700)"}`,
                     color: duration === opt.value ? "var(--accent)" : "var(--gray-400)",
                   }}
