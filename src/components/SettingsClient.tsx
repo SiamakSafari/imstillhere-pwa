@@ -49,14 +49,14 @@ function AccordionCard({
       className="rounded-2xl overflow-hidden transition-all duration-300"
       style={{
         backgroundColor: "#141414",
-        border: isOpen ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.06)",
-        boxShadow: isOpen ? "0 0 20px var(--accent-glow)" : "none",
+        border: isOpen ? "1.5px solid #4ade80" : "1px solid rgba(255,255,255,0.06)",
+        boxShadow: isOpen ? "0 0 16px rgba(74,222,128,0.25)" : "none",
       }}
     >
       {/* Header row — always visible */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+        className="w-full flex items-center gap-3 px-5 py-4 text-left"
         aria-expanded={isOpen}
       >
         {/* Icon badge */}
@@ -73,24 +73,31 @@ function AccordionCard({
 
         {/* Title + subtitle */}
         <div className="flex-1 min-w-0">
-          <p className="text-[15px] font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
+          <p className="leading-tight" style={{ color: "var(--text-primary)", fontSize: "17px", fontWeight: 600 }}>
             {section.title}
           </p>
-          <p className="text-xs mt-0.5 truncate" style={{ color: "var(--gray-400)" }}>
+          <p className="mt-0.5 truncate" style={{ color: "var(--gray-500)", fontSize: "13px", fontWeight: 400 }}>
             {section.getSubtitle()}
           </p>
         </div>
 
         {/* Chevron */}
-        <span
-          className="shrink-0 text-sm transition-transform duration-300"
+        <svg
+          className="shrink-0 transition-transform duration-300"
           style={{
-            color: "var(--gray-500)",
             transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
           }}
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--gray-400)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          ▾
-        </span>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
 
       {/* Expandable content */}
@@ -102,7 +109,7 @@ function AccordionCard({
           overflow: "hidden",
         }}
       >
-        <div className="px-4 pb-5 pt-1">{children}</div>
+        <div className="px-5 pb-5 pt-1">{children}</div>
       </div>
     </div>
   );
@@ -347,7 +354,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
     {
       id: "account",
       icon: "👤",
-      iconBg: "#5b5fc7",
+      iconBg: "#7c3aed",
       title: "Account",
       getSubtitle: () => `${displayName || "No name"} · ${profile?.id ? "Connected" : "Not signed in"}`,
     },
@@ -410,7 +417,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
       </header>
 
       {/* ─── Accordion Sections ─── */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3.5">
         {/* ───────── 1. Account ───────── */}
         <AccordionCard section={sections[0]} isOpen={openSection === "account"} onToggle={() => toggle("account")}>
           <form
@@ -519,24 +526,21 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
 
         {/* ───────── 2. Appearance ───────── */}
         <AccordionCard section={sections[1]} isOpen={openSection === "appearance"} onToggle={() => toggle("appearance")}>
-          <div className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--gray-400)" }}>
-                Theme
-              </label>
+          <div>
+            <div className="flex items-center justify-between py-3">
+              <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>🌙 Theme</span>
               <ThemeSegmented value={theme} onChange={(t) => setTheme(t as "system" | "dark" | "light")} />
             </div>
-
-            <div>
-              <label className="block text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: "var(--gray-400)" }}>
-                Accent color
-              </label>
+            <div style={{ height: 1, backgroundColor: "var(--gray-800)" }} />
+            <div className="flex items-center justify-between py-3">
+              <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>🏷️ Accent color</span>
               <AccentDots value={accentColor} onChange={(c) => setAccentColor(c as "green" | "blue" | "purple" | "orange" | "pink")} />
             </div>
-
-            <SettingRow label="Sound effects">
+            <div style={{ height: 1, backgroundColor: "var(--gray-800)" }} />
+            <div className="flex items-center justify-between py-3">
+              <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>🔊 Sound effects</span>
               <ToggleSwitch checked={soundEnabled} onChange={() => setSoundEnabled(!soundEnabled)} />
-            </SettingRow>
+            </div>
           </div>
         </AccordionCard>
 
@@ -660,11 +664,8 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
               Reset App
             </button>
 
-            {/* Legal / version */}
+            {/* Legal */}
             <div className="text-center pt-2">
-              <p className="text-xs" style={{ color: "var(--gray-600)" }}>
-                ImStillHere v1.0.0
-              </p>
               <p className="text-xs mt-1" style={{ color: "var(--gray-700)" }}>
                 Made with ❤️ for peace of mind
               </p>
@@ -672,6 +673,11 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
           </div>
         </AccordionCard>
       </div>
+
+      {/* Version footer */}
+      <p className="text-center mt-6 mb-2" style={{ color: "var(--gray-500)", fontSize: "13px" }}>
+        Still Here v1.0.0
+      </p>
 
       <BottomNav active="settings" />
     </main>
