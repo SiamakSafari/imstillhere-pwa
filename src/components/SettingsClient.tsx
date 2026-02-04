@@ -22,6 +22,8 @@ import {
   SmsCheckIn,
   ThemeToggle,
 } from "./settings";
+import VacationMode from "./VacationMode";
+import BottomNav from "./BottomNav";
 
 interface Props {
   profile: Profile | null;
@@ -125,7 +127,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
   ];
 
   return (
-    <main className="min-h-dvh px-4 py-6 max-w-lg mx-auto" style={{ backgroundColor: 'var(--bg)' }}>
+    <main className="min-h-dvh px-4 py-6 pb-24 max-w-lg mx-auto" style={{ backgroundColor: 'var(--bg)' }}>
       {/* Header */}
       <header className="flex items-center gap-4 mb-8">
         <Link
@@ -374,6 +376,19 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
 
       <hr className="mb-8" style={{ borderColor: 'var(--gray-800)' }} />
 
+      {/* Vacation Mode */}
+      <section className="mb-8">
+        <VacationMode
+          vacationUntil={null}
+          onSetVacation={(until) => {
+            console.log("Vacation set until:", until);
+          }}
+          onCancelVacation={() => {
+            console.log("Vacation cancelled");
+          }}
+        />
+      </section>
+
       {/* Pause / Resume */}
       <section className="mb-8">
         <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -430,7 +445,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
         <p className="text-sm" style={{ color: 'var(--gray-600)' }}>ImStillHere v1.0.0</p>
       </section>
 
-      <div className="h-16" />
+      <BottomNav active="settings" />
     </main>
   );
 }

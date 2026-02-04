@@ -2,7 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ══════════════════════════════════════════════════
+   THEME SYSTEM
+   - Dark mode: default (:root)
+   - Light mode: [data-theme="light"]
+   - System mode: JS toggles data-theme based on prefers-color-scheme
+   - Accent colors: [data-accent="blue|purple|orange|pink"]
+   ══════════════════════════════════════════════════ */
+
+/* ── Dark Mode (default) ── */
 :root {
+  /* Backgrounds */
   --bg: #0a0a0a;
   --bg-card: #141414;
   --bg-card-hover: #1a1a1a;
@@ -12,13 +22,19 @@
   --card: #141414;
   --card-border: #27272a;
   --card-hover: #1a1a1a;
+
+  /* Accent (green default) */
   --accent: #4ade80;
   --accent-dark: #22c55e;
   --accent-darker: #16a34a;
   --accent-glow: rgba(74, 222, 128, 0.4);
   --accent-subtle: rgba(74, 222, 128, 0.08);
+
+  /* Text */
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
+
+  /* Grays */
   --gray-50: #fafafa;
   --gray-100: #f4f4f5;
   --gray-200: #e4e4e7;
@@ -29,14 +45,147 @@
   --gray-700: #3f3f46;
   --gray-800: #27272a;
   --gray-900: #18181b;
+
+  /* Semantic */
   --danger: #ef4444;
   --warning: #fbbf24;
   --info: #3b82f6;
+
+  /* Moods */
+  --mood-great: #7cb87c;
+  --mood-good: #9fcdaa;
+  --mood-okay: #d4c36a;
+  --mood-low: #d4a574;
+  --mood-rough: #c98a8a;
+
+  /* Meta */
+  --color-scheme: dark;
 }
+
+/* ── Light Mode ── */
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg: #ffffff;
+  --bg-card: #f5f5f5;
+  --bg-card-hover: #eeeeee;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --bg-modal: #ffffff;
+  --bg-light: #f0f0f0;
+  --card: #f5f5f5;
+  --card-border: #e5e5e5;
+  --card-hover: #eeeeee;
+
+  /* Accent (green default — darker for light bg) */
+  --accent: #16a34a;
+  --accent-dark: #15803d;
+  --accent-darker: #166534;
+  --accent-glow: rgba(22, 163, 74, 0.2);
+  --accent-subtle: rgba(22, 163, 74, 0.06);
+
+  /* Text */
+  --text-primary: #000000;
+  --text-secondary: #6b7280;
+
+  /* Grays (inverted for light mode) */
+  --gray-50: #18181b;
+  --gray-100: #27272a;
+  --gray-200: #3f3f46;
+  --gray-300: #52525b;
+  --gray-400: #71717a;
+  --gray-500: #a1a1aa;
+  --gray-600: #d4d4d8;
+  --gray-700: #e4e4e7;
+  --gray-800: #e5e5e5;
+  --gray-900: #f5f5f5;
+
+  /* Semantic */
+  --danger: #dc2626;
+  --warning: #d97706;
+  --info: #2563eb;
+
+  /* Moods */
+  --mood-great: #16a34a;
+  --mood-good: #22c55e;
+  --mood-okay: #ca8a04;
+  --mood-low: #c2410c;
+  --mood-rough: #dc2626;
+
+  /* Meta */
+  --color-scheme: light;
+}
+
+/* ── Accent: Blue ── */
+[data-accent="blue"] {
+  --accent: #60a5fa;
+  --accent-dark: #3b82f6;
+  --accent-darker: #2563eb;
+  --accent-glow: rgba(96, 165, 250, 0.4);
+  --accent-subtle: rgba(96, 165, 250, 0.08);
+}
+[data-theme="light"][data-accent="blue"] {
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --accent-darker: #1e40af;
+  --accent-glow: rgba(37, 99, 235, 0.2);
+  --accent-subtle: rgba(37, 99, 235, 0.06);
+}
+
+/* ── Accent: Purple ── */
+[data-accent="purple"] {
+  --accent: #a78bfa;
+  --accent-dark: #8b5cf6;
+  --accent-darker: #7c3aed;
+  --accent-glow: rgba(167, 139, 250, 0.4);
+  --accent-subtle: rgba(167, 139, 250, 0.08);
+}
+[data-theme="light"][data-accent="purple"] {
+  --accent: #7c3aed;
+  --accent-dark: #6d28d9;
+  --accent-darker: #5b21b6;
+  --accent-glow: rgba(124, 58, 237, 0.2);
+  --accent-subtle: rgba(124, 58, 237, 0.06);
+}
+
+/* ── Accent: Orange ── */
+[data-accent="orange"] {
+  --accent: #fb923c;
+  --accent-dark: #f97316;
+  --accent-darker: #ea580c;
+  --accent-glow: rgba(251, 146, 60, 0.4);
+  --accent-subtle: rgba(251, 146, 60, 0.08);
+}
+[data-theme="light"][data-accent="orange"] {
+  --accent: #ea580c;
+  --accent-dark: #c2410c;
+  --accent-darker: #9a3412;
+  --accent-glow: rgba(234, 88, 12, 0.2);
+  --accent-subtle: rgba(234, 88, 12, 0.06);
+}
+
+/* ── Accent: Pink ── */
+[data-accent="pink"] {
+  --accent: #f472b6;
+  --accent-dark: #ec4899;
+  --accent-darker: #db2777;
+  --accent-glow: rgba(244, 114, 182, 0.4);
+  --accent-subtle: rgba(244, 114, 182, 0.08);
+}
+[data-theme="light"][data-accent="pink"] {
+  --accent: #db2777;
+  --accent-dark: #be185d;
+  --accent-darker: #9d174d;
+  --accent-glow: rgba(219, 39, 119, 0.2);
+  --accent-subtle: rgba(219, 39, 119, 0.06);
+}
+
+/* ══════════════════════════════════════════════════
+   BASE STYLES
+   ══════════════════════════════════════════════════ */
 
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  color-scheme: var(--color-scheme);
 }
 
 body {
@@ -47,6 +196,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
+  transition: background-color 0.3s ease, color 0.2s ease;
 }
 
 /* Smooth button press */
@@ -85,7 +235,7 @@ body {
 .card-hover:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  border-color: rgba(74, 222, 128, 0.15) !important;
+  border-color: var(--accent-subtle) !important;
 }
 
 /* Smooth fade-in on mount */
@@ -140,9 +290,9 @@ body {
   border-radius: 999px;
 }
 
-/* Input styling for dark theme */
+/* Input styling follows color scheme */
 input, select, textarea {
-  color-scheme: dark;
+  color-scheme: var(--color-scheme);
 }
 
 /* Focus ring */
@@ -159,4 +309,13 @@ input:focus, select:focus, textarea:focus {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* Hide scrollbar for time chip containers */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
