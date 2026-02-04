@@ -11,7 +11,7 @@ const config: Config = {
       colors: {
         dark: {
           bg: '#0B1120',
-          'bg-deep': '#0a0f1a',
+          'bg-deep': '#080d19',
           card: '#141B2D',
           'card-border': '#1E2A3F',
           'card-hover': '#1a2338',

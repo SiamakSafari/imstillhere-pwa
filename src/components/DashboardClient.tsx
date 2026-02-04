@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import type { Profile } from "@/lib/types";
 import { getQuoteForDate } from "@/lib/quotes";
 import PWAInstallPrompt from "./PWAInstallPrompt";
@@ -40,7 +41,7 @@ function getWeekRange(): string {
   sunday.setDate(monday.getDate() + 6);
   const fmt = (d: Date) =>
     d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  return `${fmt(monday)} - ${fmt(sunday)}`;
+  return `${fmt(monday)} – ${fmt(sunday)}`;
 }
 
 export default function DashboardClient({
@@ -63,8 +64,6 @@ export default function DashboardClient({
 
   const name = profile?.display_name || "friend";
   const quote = useMemo(() => getQuoteForDate(new Date()), []);
-
-  // Calculate days checked in this week (simple: streak capped at 7, or count)
   const weekDays = Math.min(streak, 7);
 
   async function handleCheckIn() {
@@ -96,34 +95,40 @@ export default function DashboardClient({
 
   return (
     <main
-      className="min-h-dvh flex flex-col px-5 py-6 max-w-lg mx-auto"
+      className="min-h-dvh flex flex-col px-5 pt-5 pb-8 max-w-lg mx-auto"
       style={{ backgroundColor: "var(--bg)" }}
     >
       <Confetti trigger={showConfetti} streak={streak} />
 
       {/* ===== TOP BAR ===== */}
-      <header className="flex items-center justify-between mb-8">
-        {/* Avatar */}
+      <header className="flex items-center justify-between mb-10 animate-fade-in-up">
+        {/* Avatar circle */}
         <div
-          className="w-11 h-11 rounded-full flex items-center justify-center text-base font-bold"
+          className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold shadow-lg"
           style={{
-            backgroundColor: "#16a34a",
+            background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
             color: "#fff",
+            boxShadow: "0 2px 12px rgba(34, 197, 94, 0.3)",
           }}
         >
           {getInitial(name)}
         </div>
 
         {/* Right icons */}
-        <div className="flex items-center gap-4">
-          <Link href="/settings" aria-label="Calendar">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/settings"
+            aria-label="Calendar"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "var(--card)" }}
+          >
             <svg
-              width="24"
-              height="24"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
               style={{ color: "var(--text-secondary)" }}
@@ -134,14 +139,19 @@ export default function DashboardClient({
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </Link>
-          <Link href="/settings" aria-label="Settings">
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "var(--card)" }}
+          >
             <svg
-              width="24"
-              height="24"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
               style={{ color: "var(--text-secondary)" }}
@@ -157,47 +167,47 @@ export default function DashboardClient({
       {contactCount === 0 && (
         <Link
           href="/settings"
-          className="block rounded-lg p-4 mb-6 text-sm"
+          className="block rounded-xl p-4 mb-6 text-sm animate-fade-in-up"
           style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--warning)",
+            backgroundColor: "rgba(251, 191, 36, 0.06)",
+            border: "1px solid rgba(251, 191, 36, 0.25)",
           }}
         >
           <p className="font-semibold" style={{ color: "var(--warning)" }}>
             ⚠️ No emergency contacts
           </p>
           <p className="mt-1" style={{ color: "var(--text-secondary)" }}>
-            Nobody will know if you miss a check-in. Fix that.
+            Nobody will know if you miss a check-in.
           </p>
         </Link>
       )}
 
       {/* ===== GREETING ===== */}
-      <div className="text-center mb-10">
-        <p className="text-xl" style={{ color: "var(--text-secondary)" }}>
+      <div className="text-center mb-10 animate-fade-in-up stagger-1">
+        <p className="text-2xl font-light tracking-tight" style={{ color: "var(--text-secondary)" }}>
           {getGreeting()},{" "}
-          <span className="font-bold" style={{ color: "var(--text-primary)" }}>
+          <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
             {name}
           </span>
         </p>
       </div>
 
       {/* ===== CHECK-IN BUTTON with radial glow ===== */}
-      <div className="flex justify-center mb-12">
+      <div className="flex justify-center mb-14 animate-fade-in-up stagger-2" style={{ opacity: 0 }}>
         <div className="relative" style={{ width: 300, height: 300 }}>
-          {/* Radial glow behind the button */}
+          {/* Outer radial glow — light emanating from button */}
           {!checkedIn && (
             <div
               className="absolute checkin-radial-glow"
               style={{
-                width: 340,
-                height: 340,
+                width: 380,
+                height: 380,
                 left: "50%",
                 top: "50%",
                 transform: "translate(-50%, -50%)",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(circle, rgba(74, 222, 128, 0.25) 0%, rgba(74, 222, 128, 0.08) 40%, transparent 70%)",
+                  "radial-gradient(circle, rgba(74, 222, 128, 0.2) 0%, rgba(74, 222, 128, 0.1) 30%, rgba(74, 222, 128, 0.03) 55%, transparent 75%)",
                 pointerEvents: "none",
               }}
             />
@@ -207,17 +217,20 @@ export default function DashboardClient({
           <button
             onClick={handleCheckIn}
             disabled={checkedIn || loading}
-            className="absolute rounded-full flex flex-col items-center justify-center transition-all btn-press"
+            className="absolute rounded-full flex flex-col items-center justify-center transition-all duration-300 btn-press"
             style={{
-              width: 260,
-              height: 260,
+              width: 270,
+              height: 270,
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%)",
               background: checkedIn
-                ? "linear-gradient(135deg, #1a2338 0%, #141B2D 100%)"
-                : "linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)",
-              border: checkedIn ? "2px solid var(--card-border)" : "none",
+                ? "linear-gradient(145deg, #1a2338 0%, #141B2D 100%)"
+                : "linear-gradient(145deg, #5eead4 0%, #4ade80 25%, #22c55e 60%, #16a34a 100%)",
+              border: checkedIn ? "1.5px solid var(--card-border)" : "none",
+              boxShadow: checkedIn
+                ? "inset 0 1px 3px rgba(0,0,0,0.3)"
+                : "0 8px 40px rgba(34, 197, 94, 0.35), 0 2px 8px rgba(0,0,0,0.2)",
               cursor: checkedIn ? "default" : "pointer",
             }}
             aria-label={checkedIn ? "Already checked in" : "Check in"}
@@ -226,18 +239,13 @@ export default function DashboardClient({
               <div
                 className="w-10 h-10 border-[3px] rounded-full animate-spin"
                 style={{
-                  borderColor: "var(--bg)",
-                  borderTopColor: "transparent",
+                  borderColor: "rgba(11, 17, 32, 0.3)",
+                  borderTopColor: "var(--bg)",
                 }}
               />
             ) : checkedIn ? (
               <div className="text-center animate-fade-up">
-                <span
-                  className="text-5xl block mb-1"
-                  style={{ color: "var(--accent)" }}
-                >
-                  ✅
-                </span>
+                <span className="text-6xl block mb-2">✅</span>
                 <span
                   className="text-xl font-bold block"
                   style={{ color: "var(--accent)" }}
@@ -245,7 +253,7 @@ export default function DashboardClient({
                   Still alive
                 </span>
                 <span
-                  className="text-sm block mt-1"
+                  className="text-sm block mt-1.5 font-medium"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   See you tomorrow
@@ -254,14 +262,14 @@ export default function DashboardClient({
             ) : (
               <div className="text-center">
                 <span
-                  className="text-3xl font-bold leading-tight block"
-                  style={{ color: "#0B1120", letterSpacing: -0.5 }}
+                  className="text-[28px] font-bold leading-tight block"
+                  style={{ color: "#0B1120" }}
                 >
                   Check In
                 </span>
                 <span
-                  className="text-base font-medium mt-2 block"
-                  style={{ color: "rgba(11, 17, 32, 0.6)" }}
+                  className="text-[15px] font-medium mt-2 block"
+                  style={{ color: "rgba(11, 17, 32, 0.55)" }}
                 >
                   Tap to confirm
                 </span>
@@ -273,24 +281,25 @@ export default function DashboardClient({
 
       {/* ===== STREAK CARD ===== */}
       <div
-        className="rounded-xl p-5 mb-6"
+        className="rounded-2xl p-6 mb-5 card-hover animate-fade-in-up stagger-3"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--card-border)",
+          opacity: 0,
         }}
       >
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🔥</span>
+        <div className="flex items-center gap-2.5 mb-3">
+          <span className="text-xl">🔥</span>
           <span
-            className="text-xs font-bold uppercase tracking-widest"
+            className="text-[11px] font-bold uppercase tracking-[0.15em]"
             style={{ color: "var(--text-secondary)" }}
           >
             Streak
           </span>
         </div>
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-3">
           <span
-            className="text-5xl font-extrabold"
+            className="text-6xl font-extrabold tracking-tight"
             style={{ color: "var(--text-primary)" }}
           >
             {streak}
@@ -305,23 +314,23 @@ export default function DashboardClient({
       </div>
 
       {/* ===== DAILY QUOTE ===== */}
-      <div className="text-center mb-8 px-4">
+      <div className="text-center mb-8 px-6 animate-fade-in-up stagger-4" style={{ opacity: 0 }}>
         <span
-          className="text-3xl block mb-2"
-          style={{ color: "var(--accent)", opacity: 0.4 }}
+          className="text-3xl block mb-3"
+          style={{ color: "var(--accent)", opacity: 0.35 }}
         >
           ❝
         </span>
         <p
-          className="text-lg italic leading-relaxed"
-          style={{ color: "var(--accent)" }}
+          className="text-[17px] italic leading-relaxed font-light"
+          style={{ color: "var(--accent)", opacity: 0.9 }}
         >
           {quote.text}
         </p>
         {quote.author && (
           <p
-            className="text-sm mt-2"
-            style={{ color: "var(--text-secondary)" }}
+            className="text-sm mt-3 font-medium"
+            style={{ color: "var(--text-secondary)", opacity: 0.7 }}
           >
             — {quote.author}
           </p>
@@ -330,63 +339,63 @@ export default function DashboardClient({
 
       {/* ===== THIS WEEK CARD ===== */}
       <div
-        className="rounded-xl p-5 mb-8"
+        className="rounded-2xl p-6 mb-10 card-hover animate-fade-in-up stagger-5"
         style={{
           backgroundColor: "var(--card)",
           border: "1px solid var(--card-border)",
+          opacity: 0,
         }}
       >
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-lg">📅</span>
+        <div className="flex items-center gap-2.5 mb-5">
+          <span className="text-xl">📅</span>
           <span
-            className="text-xs font-bold uppercase tracking-widest"
+            className="text-[11px] font-bold uppercase tracking-[0.15em]"
             style={{ color: "var(--text-secondary)" }}
           >
             This Week
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 text-center mb-3">
-          {/* Days */}
+        <div className="grid grid-cols-3 gap-4 text-center mb-4">
           <div>
             <p
-              className="text-3xl font-extrabold"
+              className="text-4xl font-extrabold tracking-tight"
               style={{ color: "var(--text-primary)" }}
             >
               {weekDays}
             </p>
             <p
-              className="text-xs font-bold uppercase tracking-wider mt-1"
+              className="text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5"
               style={{ color: "var(--text-secondary)" }}
             >
               Days
             </p>
           </div>
-          {/* Avg Mood */}
-          <div>
+          <div
+            style={{ borderLeft: "1px solid var(--card-border)", borderRight: "1px solid var(--card-border)" }}
+          >
             <p
-              className="text-3xl font-extrabold"
-              style={{ color: "var(--text-primary)" }}
+              className="text-4xl font-extrabold tracking-tight"
+              style={{ color: "var(--text-secondary)" }}
             >
               —
             </p>
             <p
-              className="text-xs font-bold uppercase tracking-wider mt-1"
+              className="text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5"
               style={{ color: "var(--text-secondary)" }}
             >
               Mood
             </p>
           </div>
-          {/* Streak */}
           <div>
             <p
-              className="text-3xl font-extrabold"
+              className="text-4xl font-extrabold tracking-tight"
               style={{ color: "var(--text-primary)" }}
             >
               {streak}
             </p>
             <p
-              className="text-xs font-bold uppercase tracking-wider mt-1"
+              className="text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5"
               style={{ color: "var(--text-secondary)" }}
             >
               Streak
@@ -395,7 +404,7 @@ export default function DashboardClient({
         </div>
 
         <p
-          className="text-xs text-center"
+          className="text-xs text-center font-medium"
           style={{ color: "var(--gray-500)" }}
         >
           {getWeekRange()}
@@ -403,11 +412,11 @@ export default function DashboardClient({
       </div>
 
       {/* Bottom actions */}
-      <div className="flex items-center justify-between pt-2 pb-4 mt-auto">
+      <div className="flex items-center justify-between pt-2 pb-4 mt-auto animate-fade-in-up stagger-6" style={{ opacity: 0 }}>
         <Link
           href="/share"
-          className="text-sm transition-opacity hover:opacity-80"
-          style={{ color: "var(--gray-500)" }}
+          className="text-sm font-medium transition-all hover:opacity-80"
+          style={{ color: "var(--text-secondary)" }}
         >
           Share proof of life →
         </Link>
@@ -417,7 +426,7 @@ export default function DashboardClient({
             router.push("/");
             router.refresh();
           }}
-          className="text-xs transition-opacity hover:opacity-80"
+          className="text-xs font-medium transition-all hover:opacity-80"
           style={{ color: "var(--gray-500)" }}
         >
           Sign out
@@ -425,6 +434,9 @@ export default function DashboardClient({
       </div>
 
       <PWAInstallPrompt />
+
+      {/* Preload logo for other pages */}
+      <Image src="/logo.png" alt="" width={1} height={1} className="hidden" priority />
     </main>
   );
 }

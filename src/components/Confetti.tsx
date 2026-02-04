@@ -77,12 +77,12 @@ export default function Confetti({ trigger, streak }: { trigger: boolean; streak
               boxShadow: '0 0 40px var(--accent-glow)',
             }}
           >
-            <div className="text-5xl mb-4">💀</div>
+            <div className="text-5xl mb-4">🔥</div>
             <div className="text-xl font-bold mb-2" style={{ color: 'var(--accent)' }}>
-              {streak} days alive 🔥
+              {streak} day{streak === 1 ? "" : "s"} alive
             </div>
             <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Still not dead. Impressive.
+              Still going strong ✅
             </div>
           </div>
         </div>

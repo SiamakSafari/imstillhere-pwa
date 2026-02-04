@@ -4,7 +4,7 @@
 
 :root {
   --bg: #0B1120;
-  --bg-deep: #0a0f1a;
+  --bg-deep: #080d19;
   --card: #141B2D;
   --card-border: #1E2A3F;
   --card-hover: #1a2338;
@@ -12,12 +12,13 @@
   --accent-dark: #22c55e;
   --accent-darker: #16a34a;
   --accent-glow: rgba(74, 222, 128, 0.4);
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
+  --accent-subtle: rgba(74, 222, 128, 0.08);
+  --text-primary: #f0f2f5;
+  --text-secondary: #8b95a8;
   --gray-400: #a1a1aa;
-  --gray-500: #71717a;
-  --gray-600: #52525b;
-  --gray-700: #3f3f46;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
   --gray-800: #1E2A3F;
   --gray-900: #0f1729;
   --danger: #ef4444;
@@ -30,20 +31,21 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg);
   color: var(--text-primary);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 /* Smooth button press */
 .btn-press {
-  transition: transform 0.1s ease;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
 }
 .btn-press:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 /* PWA standalone detection */
@@ -53,15 +55,54 @@ body {
   }
 }
 
-/* Check-in button radial glow */
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.08); }
+/* Check-in button radial glow — soft light emanation */
+@keyframes glow-breathe {
+  0%, 100% {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
 }
 
 .checkin-radial-glow {
-  animation: glow-pulse 3s ease-in-out infinite;
+  animation: glow-breathe 3.5s ease-in-out infinite;
 }
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(74, 222, 128, 0.15) !important;
+}
+
+/* Smooth fade-in on mount */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
 
 /* Confetti */
 @keyframes confetti-fall {
@@ -95,6 +136,12 @@ body {
 /* Input styling for dark theme */
 input, select, textarea {
   color-scheme: dark;
+}
+
+/* Focus ring */
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-dark) !important;
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 /* Safe area padding for PWA */
