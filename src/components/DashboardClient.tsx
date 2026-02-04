@@ -55,21 +55,21 @@ const VALUE_TO_LABEL: Record<number, string> = {
   1: "Rough",
 };
 
-/* ─── Theme constants (from Expo theme.ts) ─── */
+/* ─── Theme: CSS variable references ─── */
 const Colors = {
-  bgDark: "#0a0a0a",
-  bgCard: "#141414",
-  bgCardHover: "#1a1a1a",
-  accentPrimary: "#4ade80",
-  accentDark: "#22c55e",
-  accentDarker: "#16a34a",
-  accentGlow: "rgba(74, 222, 128, 0.4)",
-  gray200: "#e4e4e7",
-  gray400: "#a1a1aa",
-  gray500: "#71717a",
-  gray700: "#3f3f46",
-  gray800: "#27272a",
-  white: "#ffffff",
+  bgDark: "var(--bg)",
+  bgCard: "var(--bg-card)",
+  bgCardHover: "var(--bg-card-hover)",
+  accentPrimary: "var(--accent)",
+  accentDark: "var(--accent-dark)",
+  accentDarker: "var(--accent-darker)",
+  accentGlow: "var(--accent-glow)",
+  gray200: "var(--gray-200)",
+  gray400: "var(--gray-400)",
+  gray500: "var(--gray-500)",
+  gray700: "var(--gray-700)",
+  gray800: "var(--gray-800)",
+  white: "var(--text-primary)",
 };
 
 /* ─── Helpers (from Expo utils/time.ts) ─── */
@@ -352,7 +352,7 @@ export default function DashboardClient({
                 : "none",
               boxShadow: checkedIn
                 ? "none"
-                : `0 0 20px ${Colors.accentPrimary}66`,
+                : "0 0 20px var(--accent-glow)",
               cursor: checkedIn ? "default" : "pointer",
             }}
             aria-label={checkedIn ? "Already checked in" : "Check in"}
@@ -640,7 +640,7 @@ export default function DashboardClient({
           <div className="flex justify-center" style={{ marginTop: 16 }}>
             <span
               style={{
-                backgroundColor: Colors.accentDark + "20",
+                backgroundColor: "var(--accent-subtle)",
                 borderRadius: 9999,
                 paddingLeft: 16,
                 paddingRight: 16,

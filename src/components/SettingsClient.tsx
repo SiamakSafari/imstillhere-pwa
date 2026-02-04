@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Profile, EmergencyContact } from "@/lib/types";
+import { useTheme } from "@/context/ThemeContext";
 import {
   AccentColorPicker,
   AlertPreferences,
@@ -41,9 +42,10 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Theme system — wired to ThemeContext (persists to localStorage, drives CSS variables)
+  const { theme, setTheme, accentColor, setAccentColor } = useTheme();
+
   // Extended settings state (stored client-side for now, matching Expo AppData model)
-  const [theme, setTheme] = useState<string>("system");
-  const [accentColor, setAccentColor] = useState<string>("green");
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [locationSharingEnabled, setLocationSharingEnabled] = useState(false);
@@ -250,7 +252,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
         <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
           Theme
         </h2>
-        <ThemeToggle value={theme} onChange={setTheme} />
+        <ThemeToggle value={theme} onChange={(t) => setTheme(t as "system" | "dark" | "light")} />
       </section>
 
       {/* Accent Color */}
@@ -258,7 +260,7 @@ export default function SettingsClient({ profile, contacts: initialContacts }: P
         <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
           Accent Color
         </h2>
-        <AccentColorPicker value={accentColor} onChange={setAccentColor} />
+        <AccentColorPicker value={accentColor} onChange={(c) => setAccentColor(c as "green" | "blue" | "purple" | "orange" | "pink")} />
       </section>
 
       {/* Sound Effects */}

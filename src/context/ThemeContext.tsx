@@ -1,55 +1,154 @@
 "use client";
 
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 
-const ACCENT_COLORS: Record<string, { primary: string; dark: string; darker: string; glow: string }> = {
-  green:  { primary: "#4ade80", dark: "#22c55e", darker: "#16a34a", glow: "rgba(74, 222, 128, 0.4)" },
-  blue:   { primary: "#60a5fa", dark: "#3b82f6", darker: "#2563eb", glow: "rgba(96, 165, 250, 0.4)" },
-  purple: { primary: "#a78bfa", dark: "#8b5cf6", darker: "#7c3aed", glow: "rgba(167, 139, 250, 0.4)" },
-  orange: { primary: "#fb923c", dark: "#f97316", darker: "#ea580c", glow: "rgba(251, 146, 60, 0.4)" },
-  pink:   { primary: "#f472b6", dark: "#ec4899", darker: "#db2777", glow: "rgba(244, 114, 182, 0.4)" },
-};
+/* ══════════════════════════════════════════════════
+   Full Theme System — matches Expo's ThemeContext.tsx
+
+   Features:
+   - theme: 'system' | 'dark' | 'light'
+   - accentColor: 'green' | 'blue' | 'purple' | 'orange' | 'pink'
+   - Drives CSS variables via data-theme / data-accent on <html>
+   - Anti-FOUC: layout.tsx has an inline script that sets data-theme
+     before React hydration using the same localStorage keys
+   - Persists to localStorage ('ish-theme', 'ish-accent')
+   - Listens to prefers-color-scheme for system mode
+   ══════════════════════════════════════════════════ */
+
+type ThemeMode = "system" | "dark" | "light";
+type AccentColor = "green" | "blue" | "purple" | "orange" | "pink";
 
 interface ThemeContextType {
-  accentColor: string;
-  setAccentColor: (color: string) => void;
-  accent: { primary: string; dark: string; darker: string; glow: string };
+  /** User's theme preference */
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+  /** User's accent color preference */
+  accentColor: AccentColor;
+  setAccentColor: (color: AccentColor) => void;
+  /** What's actually rendered right now ('dark' or 'light') */
+  resolvedTheme: "dark" | "light";
+  /** Convenience: resolvedTheme === 'dark' */
+  isDark: boolean;
+  /** Toggle between dark/light (ignores system) */
+  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
+  theme: "system",
+  setTheme: () => {},
   accentColor: "green",
   setAccentColor: () => {},
-  accent: ACCENT_COLORS.green,
+  resolvedTheme: "dark",
+  isDark: true,
+  toggleTheme: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
+const STORAGE_KEY_THEME = "ish-theme";
+const STORAGE_KEY_ACCENT = "ish-accent";
+
+function getSystemPreference(): "dark" | "light" {
+  if (typeof window === "undefined") return "dark";
+  return window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark";
+}
+
+function applyToDOM(resolved: "dark" | "light", accent: AccentColor) {
+  if (typeof document === "undefined") return;
+  const html = document.documentElement;
+
+  // data-theme drives CSS variable sets in globals.css
+  html.setAttribute("data-theme", resolved);
+
+  // data-accent overrides accent CSS variables (green is default, no attr needed)
+  if (accent === "green") {
+    html.removeAttribute("data-accent");
+  } else {
+    html.setAttribute("data-accent", accent);
+  }
+
+  // Update PWA status bar color
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute("content", resolved === "dark" ? "#0a0a0a" : "#ffffff");
+  }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [accentColor, setAccentColorState] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("ish-accent") || "green";
-    }
-    return "green";
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "system";
+    return (localStorage.getItem(STORAGE_KEY_THEME) as ThemeMode) || "system";
   });
 
-  const setAccentColor = useCallback((color: string) => {
-    setAccentColorState(color);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("ish-accent", color);
-      // Update CSS variables
-      const accent = ACCENT_COLORS[color] || ACCENT_COLORS.green;
-      document.documentElement.style.setProperty("--accent", accent.primary);
-      document.documentElement.style.setProperty("--accent-dark", accent.dark);
-      document.documentElement.style.setProperty("--accent-darker", accent.darker);
-      document.documentElement.style.setProperty("--accent-glow", accent.glow);
-    }
+  const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
+    if (typeof window === "undefined") return "green";
+    return (localStorage.getItem(STORAGE_KEY_ACCENT) as AccentColor) || "green";
+  });
+
+  const [systemPref, setSystemPref] = useState<"dark" | "light">(() =>
+    getSystemPreference()
+  );
+
+  // Resolve theme: system follows OS, otherwise use explicit choice
+  const resolvedTheme = useMemo<"dark" | "light">(
+    () => (theme === "system" ? systemPref : theme === "light" ? "light" : "dark"),
+    [theme, systemPref]
+  );
+
+  const isDark = resolvedTheme === "dark";
+
+  // Listen for OS preference changes (for system mode)
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemPref(e.matches ? "light" : "dark");
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const accent = useMemo(() => ACCENT_COLORS[accentColor] || ACCENT_COLORS.green, [accentColor]);
+  // Apply to DOM whenever resolved theme or accent changes
+  useEffect(() => {
+    applyToDOM(resolvedTheme, accentColor);
+  }, [resolvedTheme, accentColor]);
+
+  const setTheme = useCallback((t: ThemeMode) => {
+    setThemeState(t);
+    localStorage.setItem(STORAGE_KEY_THEME, t);
+  }, []);
+
+  const setAccentColor = useCallback((c: AccentColor) => {
+    setAccentColorState(c);
+    localStorage.setItem(STORAGE_KEY_ACCENT, c);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(isDark ? "light" : "dark");
+  }, [isDark, setTheme]);
+
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme,
+      accentColor,
+      setAccentColor,
+      resolvedTheme,
+      isDark,
+      toggleTheme,
+    }),
+    [theme, setTheme, accentColor, setAccentColor, resolvedTheme, isDark, toggleTheme]
+  );
 
   return (
-    <ThemeContext.Provider value={{ accentColor, setAccentColor, accent }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
