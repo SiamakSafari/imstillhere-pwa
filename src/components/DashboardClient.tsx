@@ -9,6 +9,16 @@ import type { Profile } from "@/lib/types";
 import { getQuoteForDate } from "@/lib/quotes";
 import PWAInstallPrompt from "./PWAInstallPrompt";
 import Confetti from "./Confetti";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import SnoozeButton from "./SnoozeButton";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import ActivityMode from "./ActivityMode";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import FamilyShareCard from "./FamilyShareCard";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import BottomNav from "./BottomNav";
+import CheckInFlow from "./CheckInFlow";
+import Celebration from "./Celebration";
 
 /* ─── Types (from Expo types.ts) ─── */
 type MoodValue = "great" | "good" | "okay" | "low" | "rough";
@@ -136,6 +146,9 @@ export default function DashboardClient({
   const [showConfetti, setShowConfetti] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [lastCheckIn, setLastCheckIn] = useState<string | null>(lastCheckinAt);
+  const [showCheckInFlow, setShowCheckInFlow] = useState(false);
+  const [checkInSubmitting, setCheckInSubmitting] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -175,6 +188,7 @@ export default function DashboardClient({
       setStreak(newStreak);
       setLastCheckIn(new Date().toISOString());
       setShowConfetti(true);
+      setShowCheckInFlow(true);
 
       if (navigator.vibrate) navigator.vibrate(100);
 
@@ -187,12 +201,48 @@ export default function DashboardClient({
     }
   }
 
+  async function handleCheckInFlowComplete(data: { mood: string | null; note: string | null }) {
+    setCheckInSubmitting(true);
+    try {
+      // Save mood/note if provided
+      if (data.mood || data.note) {
+        await supabase?.from("checkins")
+          .update({ mood: data.mood, note: data.note })
+          .eq("user_id", profile?.id)
+          .order("checked_in_at", { ascending: false })
+          .limit(1);
+      }
+    } catch (err) {
+      console.error("Failed to save mood/note:", err);
+    } finally {
+      setCheckInSubmitting(false);
+      setShowCheckInFlow(false);
+      // Check for milestone celebration
+      const milestones = [7, 14, 30, 60, 100, 365];
+      if (milestones.includes(streak)) {
+        setShowCelebration(true);
+      }
+    }
+  }
+
   return (
     <main
-      className="min-h-dvh flex flex-col px-5 pt-5 pb-8 max-w-lg mx-auto"
+      className="min-h-dvh flex flex-col px-5 pt-5 pb-24 max-w-lg mx-auto"
       style={{ backgroundColor: Colors.bgDark }}
     >
       <Confetti trigger={showConfetti} streak={streak} />
+      <CheckInFlow
+        visible={showCheckInFlow}
+        onComplete={handleCheckInFlowComplete}
+        onCancel={() => setShowCheckInFlow(false)}
+        isSubmitting={checkInSubmitting}
+      />
+      {showCelebration && (
+        <Celebration
+          streak={streak}
+          onDismiss={() => setShowCelebration(false)}
+        />
+      )}
 
       {/* ===== TOP BAR: Avatar + Greeting + Settings ===== */}
       <header className="flex items-center justify-between mb-4 animate-fade-in-up">
@@ -798,6 +848,30 @@ export default function DashboardClient({
         )}
       </div>
 
+      {/* ===== SNOOZE BUTTON ===== */}
+      <div className="animate-fade-in-up stagger-5" style={{ marginBottom: 16, opacity: 0 }}>
+        <SnoozeButton
+          snoozeUntil={null}
+          onSnooze={(until) => {
+            // In a full implementation, save to Supabase
+            console.log("Snoozed until:", until);
+          }}
+          onCancelSnooze={() => {
+            console.log("Snooze cancelled");
+          }}
+        />
+      </div>
+
+      {/* ===== ACTIVITY MODE ===== */}
+      <div className="animate-fade-in-up stagger-5" style={{ marginBottom: 24, opacity: 0 }}>
+        <ActivityMode contactName={contactName || ""} />
+      </div>
+
+      {/* ===== FAMILY SHARE CARD ===== */}
+      <div className="animate-fade-in-up stagger-6" style={{ marginBottom: 24, opacity: 0 }}>
+        <FamilyShareCard userId={profile?.id ?? null} />
+      </div>
+
       {/* Bottom actions */}
       <div
         className="flex items-center justify-between pt-2 pb-4 mt-auto animate-fade-in-up stagger-6"
@@ -832,6 +906,7 @@ export default function DashboardClient({
       </div>
 
       <PWAInstallPrompt />
+      <BottomNav active="dashboard" />
 
       {/* Preload logo for other pages */}
       <Image

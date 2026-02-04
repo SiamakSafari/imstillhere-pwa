@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import ServiceWorkerProvider from "@/components/ServiceWorkerProvider";
+import { ToastProvider } from "@/context/ToastContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -49,9 +51,13 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="antialiased safe-top safe-bottom bg-dark-bg">
-        <ServiceWorkerProvider>
-          {children}
-        </ServiceWorkerProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ServiceWorkerProvider>
+              {children}
+            </ServiceWorkerProvider>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
